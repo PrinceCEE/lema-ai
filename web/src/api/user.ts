@@ -1,14 +1,14 @@
 import { User } from "@/models";
+import axios from "axios";
 import { BaseResponse, GetUsersResponse } from "@/types";
 
 const getUsers = async (limit = 5, page = 1): Promise<GetUsersResponse> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await fetch(`${baseUrl}/users?limit=${limit}&page=${page}`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch users");
-  }
+  const response = await axios.get(
+    `${baseUrl}/users?limit=${limit}&page=${page}`
+  );
 
-  const data = (await response.json()) as BaseResponse<GetUsersResponse>;
+  const data = response.data as BaseResponse<GetUsersResponse>;
   if (!data.success) {
     throw new Error(data.message);
   }
@@ -18,15 +18,15 @@ const getUsers = async (limit = 5, page = 1): Promise<GetUsersResponse> => {
 
 const getUser = async (userId: number): Promise<User> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await fetch(`${baseUrl}/users/${userId}`);
-  const data = (await response.json()) as BaseResponse<User>;
+  const response = await axios.get(`${baseUrl}/users/${userId}`);
+  const data = response.data as BaseResponse<User>;
   return data.data!;
 };
 
 const getUsersCount = async (): Promise<number> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await fetch(`${baseUrl}/users/count`);
-  const data = (await response.json()) as BaseResponse<number>;
+  const response = await axios.get(`${baseUrl}/users/count`);
+  const data = response.data as BaseResponse<number>;
   return data.data!;
 };
 

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Post } from "@/models";
 import { BaseResponse } from "@/types";
 
@@ -7,7 +8,7 @@ const createPost = async (payload: {
   body: string;
 }): Promise<Post> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await fetch(`${baseUrl}/posts`, {
+  const response = await axios.post(`${baseUrl}/posts`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -15,11 +16,7 @@ const createPost = async (payload: {
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to create post");
-  }
-
-  const data = (await response.json()) as BaseResponse<Post>;
+  const data = response.data as BaseResponse<Post>;
   if (!data.success) {
     throw new Error(data.message);
   }
@@ -29,15 +26,15 @@ const createPost = async (payload: {
 
 const getPosts = async (userId: number): Promise<Post[]> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await fetch(`${baseUrl}/posts?user_id=${userId}`);
-  const data = (await response.json()) as BaseResponse<Post[]>;
+  const response = await axios.get(`${baseUrl}/posts?user_id=${userId}`);
+  const data = response.data as BaseResponse<Post[]>;
 
   return data.data!;
 };
 
 const deletePost = async (postId: number): Promise<void> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  await fetch(`${baseUrl}/posts/${postId}`, {
+  await axios.delete(`${baseUrl}/posts/${postId}`, {
     method: "DELETE",
   });
 };
