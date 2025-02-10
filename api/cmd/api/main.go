@@ -76,9 +76,7 @@ func main() {
 	flag.Parse()
 
 	if env != "test" {
-		if err := godotenv.Load(); err != nil {
-			panic(err)
-		}
+		_ = godotenv.Load()
 	}
 
 	cfg := config.NewConfig(env, loglevel)
