@@ -21,7 +21,7 @@ type PostRepositoryTestSuite struct {
 }
 
 func (s *PostRepositoryTestSuite) SetupSuite() {
-	db := database.GetDBConn()
+	db := database.GetDBConn("file::memory:?cache=shared")
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
 	if err != nil {
@@ -38,6 +38,7 @@ func (s *PostRepositoryTestSuite) SetupSuite() {
 			LastName:  gofakeit.LastName(),
 			Username:  gofakeit.Username(),
 			Phone:     gofakeit.Phone(),
+			Email:     gofakeit.Email(),
 			Address: models.Address{
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
@@ -63,52 +64,56 @@ func (s *PostRepositoryTestSuite) TearDownSuite() {
 	sqlDB.Close()
 }
 
-func (s *PostRepositoryTestSuite) TestCreatePost() {
-	for _, user := range s.users {
-		for i := 0; i < 5; i++ {
-			now := time.Now()
-			post := models.Post{
-				Title:  gofakeit.Sentence(10),
-				Body:   gofakeit.Sentence(1),
-				UserID: user.ID,
+func (s *PostRepositoryTestSuite) TestPostRepository() {
+	t := s.T()
+
+	t.Run("Create post", func(t *testing.T) {
+		for _, user := range s.users {
+			for i := 0; i < 5; i++ {
+				now := time.Now()
+				post := models.Post{
+					Title:  gofakeit.Sentence(7),
+					Body:   gofakeit.Sentence(40),
+					UserID: user.ID,
+				}
+
+				err := s.postRepo.CreatePost(&post)
+				s.NoError(err)
+				s.NotEmpty(post.ID)
+				s.NotEmpty(post.CreatedAt)
+				s.NotEmpty(post.UpdatedAt)
+				s.Equal(post.CreatedAt.After(now), true)
 			}
-
-			err := s.postRepo.CreatePost(&post)
-			s.NoError(err)
-			s.NotEmpty(post.ID)
-			s.NotEmpty(post.CreatedAt)
-			s.NotEmpty(post.UpdatedAt)
-			s.Equal(post.CreatedAt.After(now), true)
 		}
-	}
-}
+	})
 
-func (s *PostRepositoryTestSuite) TestGetPost() {
-	for i := 1; i <= 10; i++ {
-		post, err := s.postRepo.GetPost(uint(i))
+	t.Run("Get post", func(t *testing.T) {
+		for _, user := range s.users {
+			posts, err := s.postRepo.GetPosts(user.ID)
+
+			s.NoError(err)
+			s.NotEmpty(posts)
+			s.GreaterOrEqual(len(posts), 4)
+		}
+	})
+
+	t.Run("Get post by ID", func(t *testing.T) {
+		for i := 1; i <= 10; i++ {
+			post, err := s.postRepo.GetPost(uint(i))
+			s.NoError(err)
+			s.NotEmpty(post)
+			s.Equal(post.ID, uint(i))
+		}
+	})
+
+	t.Run("Delete post", func(t *testing.T) {
+		err := s.postRepo.DeletePost(20)
 		s.NoError(err)
-		s.NotEmpty(post)
-		s.Equal(post.ID, uint(i))
-	}
-}
 
-func (s *PostRepositoryTestSuite) TestGetPosts() {
-	for _, user := range s.users {
-		posts, err := s.postRepo.GetPosts(user.ID)
-
-		s.NoError(err)
-		s.NotEmpty(posts)
-		s.GreaterOrEqual(len(posts), 4)
-	}
-}
-
-func (s *PostRepositoryTestSuite) TestDeletePost() {
-	err := s.postRepo.DeletePost(20)
-	s.NoError(err)
-
-	post, err := s.postRepo.GetPost(20)
-	s.Error(err)
-	s.NotEqual(post.ID, 20)
+		post, err := s.postRepo.GetPost(20)
+		s.Error(err)
+		s.NotEqual(post.ID, 20)
+	})
 }
 
 func TestPostRepository(t *testing.T) {

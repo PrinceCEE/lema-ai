@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
 	"github.com/princecee/lema-ai/internal/db/repositories"
@@ -19,7 +20,9 @@ type UserServiceTestSuite struct {
 }
 
 func (s *UserServiceTestSuite) SetupSuite() {
-	db := database.GetDBConn()
+	cfg := config.NewConfig("test", "debug")
+
+	db := database.GetDBConn(cfg.DSN)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{})
 	if err != nil {
@@ -36,6 +39,7 @@ func (s *UserServiceTestSuite) SetupSuite() {
 			LastName:  gofakeit.LastName(),
 			Username:  gofakeit.Username(),
 			Phone:     gofakeit.Phone(),
+			Email:     gofakeit.Email(),
 			Address: models.Address{
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
@@ -82,10 +86,10 @@ func (s *UserServiceTestSuite) TestGetUser() {
 
 func (s *UserServiceTestSuite) TestGetUsers() {
 	for i := 1; i <= 4; i++ {
-		users, err := s.userService.GetUsers(i, 5)
+		response, err := s.userService.GetUsers(i, 5)
 
 		s.NoError(err)
-		s.Equal(len(users), 5)
+		s.Equal(5, len(response.Users))
 	}
 }
 

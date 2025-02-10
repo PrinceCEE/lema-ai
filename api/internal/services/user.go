@@ -11,7 +11,7 @@ import (
 
 type UserRepository interface {
 	GetUser(userId uint) (*models.User, error)
-	GetUsers(opts pagination.PaginationQuery) ([]*models.User, error)
+	GetUsers(opts pagination.PaginationQuery) (*pagination.GetUsersResult, error)
 	GetUserCount() (int64, error)
 }
 
@@ -37,7 +37,7 @@ func (s *UserService) GetUser(userId uint) (*models.User, error) {
 	return user, nil
 }
 
-func (s *UserService) GetUsers(page, limit int) ([]*models.User, error) {
+func (s *UserService) GetUsers(page, limit int) (*pagination.GetUsersResult, error) {
 	users, err := s.userRepo.GetUsers(pagination.PaginationQuery{
 		Page:  &page,
 		Limit: &limit,
@@ -46,7 +46,9 @@ func (s *UserService) GetUsers(page, limit int) ([]*models.User, error) {
 	if err != nil {
 		switch {
 		case errors.Is(err, gorm.ErrRecordNotFound):
-			return []*models.User{}, nil
+			return &pagination.GetUsersResult{
+				Users: []*models.User{},
+			}, nil
 		default:
 			return nil, apperror.ErrInternalServer
 		}

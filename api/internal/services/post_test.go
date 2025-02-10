@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
 	"github.com/princecee/lema-ai/internal/db/repositories"
@@ -21,8 +22,9 @@ type PostServiceTestSuite struct {
 }
 
 func (s *PostServiceTestSuite) SetupSuite() {
-	db := database.GetDBConn()
+	cfg := config.NewConfig("test", "debug")
 
+	db := database.GetDBConn(cfg.DSN)
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
 	if err != nil {
 		s.Fail(err.Error())
@@ -39,6 +41,7 @@ func (s *PostServiceTestSuite) SetupSuite() {
 			LastName:  gofakeit.LastName(),
 			Username:  gofakeit.Username(),
 			Phone:     gofakeit.Phone(),
+			Email:     gofakeit.Email(),
 			Address: models.Address{
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
@@ -69,8 +72,8 @@ func (s *PostServiceTestSuite) TestCreatePost() {
 		for i := 0; i < 5; i++ {
 			now := time.Now()
 			post := models.Post{
-				Title:  gofakeit.Sentence(10),
-				Body:   gofakeit.Sentence(1),
+				Title:  gofakeit.Sentence(7),
+				Body:   gofakeit.Sentence(40),
 				UserID: user.ID,
 			}
 

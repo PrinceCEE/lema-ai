@@ -1,16 +1,17 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/princecee/lema-ai/config"
 	"github.com/princecee/lema-ai/internal/db/models"
 	apperror "github.com/princecee/lema-ai/pkg/error"
 	"github.com/princecee/lema-ai/pkg/json"
 	"github.com/princecee/lema-ai/pkg/response"
 	"github.com/princecee/lema-ai/pkg/validator"
+	"github.com/rs/zerolog"
 )
 
 type PostService interface {
@@ -22,16 +23,18 @@ type PostService interface {
 
 type PostHandler struct {
 	postService PostService
+	config      *config.Config
+	logger      zerolog.Logger
 }
 
-func NewPostHandler(postService PostService) *PostHandler {
-	return &PostHandler{postService}
+func NewPostHandler(postService PostService, cfg *config.Config, l zerolog.Logger) *PostHandler {
+	return &PostHandler{postService, cfg, l}
 }
 
 type createPostData struct {
 	Title  string `json:"title"`
 	Body   string `json:"body"`
-	UserID uint   `json:"user_id"`
+	UserID uint   `json:"userId"`
 }
 
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +103,6 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 
 	userId, err := strconv.Atoi(r.URL.Query().Get("user_id"))
 	if err != nil {
-		fmt.Println("LINE 103", chi.URLParam(r, "user_id"))
 		resp.Message = "Invalid user ID"
 		response.SendErrorResponse(w, resp, http.StatusBadRequest)
 		return

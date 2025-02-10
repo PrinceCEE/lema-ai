@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,23 +15,28 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	"github.com/joho/godotenv"
+	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
+	"github.com/princecee/lema-ai/internal/db/models"
 	"github.com/princecee/lema-ai/internal/db/repositories"
+	"github.com/princecee/lema-ai/internal/db/seeder"
 	"github.com/princecee/lema-ai/internal/routes"
 	"github.com/princecee/lema-ai/internal/services"
 	"github.com/princecee/lema-ai/pkg/response"
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
-func addRoutes(db *gorm.DB) chi.Router {
+func addRoutes(db *gorm.DB, cfg *config.Config, l zerolog.Logger) chi.Router {
 	userRepo := repositories.NewUserRepository(db)
 	postRepo := repositories.NewPostRepository(db)
 
 	userService := services.NewUserService(userRepo)
 	postService := services.NewPostService(postRepo)
 
-	userRouter := routes.AddUserRoutes(db, userService)
-	postRouter := routes.AddPostRoutes(db, postService)
+	userRouter := routes.AddUserRoutes(db, userService, cfg, l)
+	postRouter := routes.AddPostRoutes(db, postService, cfg, l)
 	r := chi.NewRouter()
 
 	r.Use(httprate.LimitByIP(100, 1*time.Minute))
@@ -55,28 +61,46 @@ func addRoutes(db *gorm.DB) chi.Router {
 		response.SendErrorResponse(w, resp, http.StatusMethodNotAllowed)
 	})
 
+	if cfg.ENV == config.EnvDevelopment {
+		seeder.Seed(userRepo, postRepo)
+	}
+
 	return r
 }
 
 func main() {
-	db := database.GetDBConn()
-	r := addRoutes(db)
+	var env, loglevel string
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "3000"
+	flag.StringVar(&env, "env", config.EnvDevelopment, "Environment to run the server")
+	flag.StringVar(&loglevel, "loglevel", "debug", "Log level for the server")
+	flag.Parse()
+
+	if env != "test" {
+		if err := godotenv.Load(); err != nil {
+			panic(err)
+		}
 	}
+
+	cfg := config.NewConfig(env, loglevel)
+	logger := zerolog.New(os.Stdout).Level(config.GetLoggerLevel(cfg.LOG_LEVEL))
+
+	db := database.GetDBConn(cfg.DSN)
+	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
+	if err != nil {
+		panic(err)
+	}
+	r := addRoutes(db, cfg, logger)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	srv := http.Server{
 		Handler: r,
-		Addr:    fmt.Sprintf(":%s", port),
+		Addr:    fmt.Sprintf(":%s", cfg.PORT),
 	}
 
 	errChan := make(chan error)
-	log.Printf("Server started on port :%s", port)
+	log.Printf("Server started on port :%s", cfg.PORT)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			errChan <- err

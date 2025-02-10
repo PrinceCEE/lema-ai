@@ -9,6 +9,7 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/go-chi/chi"
+	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
 	"github.com/princecee/lema-ai/internal/db/repositories"
@@ -16,6 +17,7 @@ import (
 	"github.com/princecee/lema-ai/internal/services"
 	"github.com/princecee/lema-ai/pkg/json"
 	"github.com/princecee/lema-ai/pkg/response"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 )
@@ -27,7 +29,10 @@ type PostHandlerTestSuite struct {
 }
 
 func (s *PostHandlerTestSuite) SetupSuite() {
-	db := database.GetDBConn()
+	cfg := config.NewConfig("test", "debug")
+	var logger zerolog.Logger
+
+	db := database.GetDBConn(cfg.DSN)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
 	if err != nil {
@@ -45,6 +50,7 @@ func (s *PostHandlerTestSuite) SetupSuite() {
 			LastName:  gofakeit.LastName(),
 			Username:  gofakeit.Username(),
 			Phone:     gofakeit.Phone(),
+			Email:     gofakeit.Email(),
 			Address: models.Address{
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
@@ -59,7 +65,7 @@ func (s *PostHandlerTestSuite) SetupSuite() {
 	}
 
 	r := chi.NewRouter()
-	postRouter := routes.AddPostRoutes(db, postService)
+	postRouter := routes.AddPostRoutes(db, postService, cfg, logger)
 	r.Mount("/api/v1/posts", postRouter)
 
 	s.server = httptest.NewServer(r)
@@ -83,8 +89,8 @@ func (s *PostHandlerTestSuite) TestPostHandler() {
 		for i := 1; i <= 5; i++ {
 			for j := 1; j <= 5; j++ {
 				payload, _ := json.WriteJSON(map[string]any{
-					"title":   gofakeit.Sentence(10),
-					"body":    gofakeit.Sentence(1),
+					"title":   gofakeit.Sentence(7),
+					"body":    gofakeit.Sentence(40),
 					"user_id": uint(j),
 				})
 

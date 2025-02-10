@@ -6,8 +6,8 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func GetDBConn() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+func GetDBConn(dsn string) *gorm.DB {
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
 		TranslateError: true,
 		Logger:         logger.Default.LogMode(logger.Silent),
 	})

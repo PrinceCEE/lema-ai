@@ -5,25 +5,29 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/princecee/lema-ai/config"
 	"github.com/princecee/lema-ai/internal/db/models"
 	apperror "github.com/princecee/lema-ai/pkg/error"
 	"github.com/princecee/lema-ai/pkg/pagination"
 	"github.com/princecee/lema-ai/pkg/response"
 	"github.com/princecee/lema-ai/pkg/validator"
+	"github.com/rs/zerolog"
 )
 
 type UserService interface {
-	GetUsers(page, limt int) ([]*models.User, error)
+	GetUsers(page, limt int) (*pagination.GetUsersResult, error)
 	GetUserCount() (int64, error)
 	GetUser(id uint) (*models.User, error)
 }
 
 type UserHandler struct {
 	userService UserService
+	config      *config.Config
+	logger      zerolog.Logger
 }
 
-func NewUserHandler(userService UserService) *UserHandler {
-	return &UserHandler{userService}
+func NewUserHandler(userService UserService, cfg *config.Config, l zerolog.Logger) *UserHandler {
+	return &UserHandler{userService, cfg, l}
 }
 
 type GetUsersQuery struct {
@@ -53,7 +57,7 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err := h.userService.GetUsers(query.Page, query.Limit)
+	getUsersResp, err := h.userService.GetUsers(query.Page, query.Limit)
 	if err != nil {
 		code := apperror.GetErrorStatusCode(err)
 		resp.Message = err.Error()
@@ -62,7 +66,7 @@ func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp.Message = "Users fetched successfully"
-	resp.Data = users
+	resp.Data = getUsersResp
 	response.SendResponse(w, resp, nil)
 }
 

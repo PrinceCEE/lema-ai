@@ -2,7 +2,10 @@ package pagination
 
 import (
 	"errors"
+	"math"
 	"strconv"
+
+	"github.com/princecee/lema-ai/internal/db/models"
 )
 
 type PaginationQuery struct {
@@ -46,4 +49,18 @@ func FormatPaginationQuery(page, limit string) (int, int, error) {
 	}
 
 	return p, l, nil
+}
+
+func GetTotalPages(count int64, limit int) int64 {
+	return int64(math.Ceil(float64(count) / float64(limit)))
+}
+
+type GetUsersResult struct {
+	Users      []*models.User `json:"users"`
+	Count      int64          `json:"count"`
+	TotalPages int64          `json:"total_pages"`
+	Page       int64          `json:"page"`
+	Limit      int64          `json:"limit"`
+	HasNext    bool           `json:"has_next"`
+	HasPrev    bool           `json:"has_prev"`
 }

@@ -20,7 +20,7 @@ type UserRepositoryTestSuite struct {
 }
 
 func (s *UserRepositoryTestSuite) SetupSuite() {
-	db := database.GetDBConn()
+	db := database.GetDBConn("file::memory:?cache=shared")
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{})
 	if err != nil {
@@ -40,15 +40,17 @@ func (s *UserRepositoryTestSuite) TearDownSuite() {
 	sqlDB.Close()
 }
 
-func (s *UserRepositoryTestSuite) TestCreateUser() {
-	for i := 0; i < 20; i++ {
-		now := time.Now()
+func (s *UserRepositoryTestSuite) TestUserRepository() {
+	t := s.T()
 
+	t.Run("Create user", func(t *testing.T) {
+		now := time.Now()
 		user := &models.User{
 			FirstName: gofakeit.FirstName(),
 			LastName:  gofakeit.LastName(),
 			Username:  gofakeit.Username(),
 			Phone:     gofakeit.Phone(),
+			Email:     gofakeit.Email(),
 			Address: models.Address{
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
@@ -64,37 +66,58 @@ func (s *UserRepositoryTestSuite) TestCreateUser() {
 		s.NotEmpty(user.UpdatedAt)
 		s.Equal(user.CreatedAt.After(now), true)
 		s.Equal(user.ID, user.Address.UserID)
-	}
-}
 
-func (s *UserRepositoryTestSuite) TestGetUser() {
-	for i := 1; i <= 20; i++ {
-		user, err := s.userRepo.GetUser(uint(i))
+		_users := make([]*models.User, 19)
+		for i := 0; i < 19; i++ {
+			user := &models.User{
+				FirstName: gofakeit.FirstName(),
+				LastName:  gofakeit.LastName(),
+				Username:  gofakeit.Username(),
+				Phone:     gofakeit.Phone(),
+				Email:     gofakeit.Email(),
+				Address: models.Address{
+					Street:  gofakeit.StreetName(),
+					City:    gofakeit.City(),
+					State:   gofakeit.State(),
+					Zipcode: gofakeit.Zip(),
+				},
+			}
+
+			_users[i] = user
+		}
+
+		result := s.db.Create(&_users)
+		s.NoError(result.Error)
+	})
+
+	t.Run("Get user count", func(t *testing.T) {
+		count, err := s.userRepo.GetUserCount()
+		s.NoError(err)
+		s.Equal(count, int64(20))
+	})
+
+	t.Run("Get users", func(t *testing.T) {
+		for i := 1; i <= 4; i++ {
+			page := i
+			limit := 5
+
+			response, err := s.userRepo.GetUsers(pagination.PaginationQuery{
+				Page:  &page,
+				Limit: &limit,
+			})
+
+			s.NoError(err)
+			s.Equal(limit, len(response.Users))
+		}
+	})
+
+	t.Run("Get user by ID", func(t *testing.T) {
+		user, err := s.userRepo.GetUser(10)
+
 		s.NoError(err)
 		s.NotEmpty(user)
-		s.Equal(user.ID, uint(i))
-	}
-}
-
-func (s *UserRepositoryTestSuite) TestGetUsers() {
-	for i := 1; i <= 4; i++ {
-		page := i
-		limit := 5
-
-		users, err := s.userRepo.GetUsers(pagination.PaginationQuery{
-			Page:  &page,
-			Limit: &limit,
-		})
-
-		s.NoError(err)
-		s.Equal(len(users), limit)
-	}
-}
-
-func (s *UserRepositoryTestSuite) TestGetUserCount() {
-	count, err := s.userRepo.GetUserCount()
-	s.NoError(err)
-	s.Equal(count, int64(20))
+		s.Equal(uint(10), user.ID)
+	})
 }
 
 func TestUserRepository(t *testing.T) {

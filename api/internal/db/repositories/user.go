@@ -21,16 +21,30 @@ func (r *UserRepository) CreateUser(u *models.User) error {
 
 func (r *UserRepository) GetUser(userId uint) (*models.User, error) {
 	u := models.User{}
-	err := r.db.First(&u, userId).Error
+	err := r.db.Preload("Address").First(&u, userId).Error
 	return &u, err
 }
 
-func (r *UserRepository) GetUsers(opts pagination.PaginationQuery) ([]*models.User, error) {
+func (r *UserRepository) GetUsers(opts pagination.PaginationQuery) (*pagination.GetUsersResult, error) {
+	count, err := r.GetUserCount()
+	if err != nil {
+		return nil, err
+	}
+
 	offset := pagination.GetPaginationData(opts)
 	var users []*models.User
-	err := r.db.Offset(offset).Limit(*opts.Limit).Find(&users).Error
+	err = r.db.Preload("Address").Offset(offset).Limit(*opts.Limit).Find(&users).Error
 
-	return users, err
+	totalPages := pagination.GetTotalPages(count, *opts.Limit)
+	return &pagination.GetUsersResult{
+		Users:      users,
+		Count:      count,
+		TotalPages: totalPages,
+		Page:       int64(*opts.Page),
+		Limit:      int64(*opts.Limit),
+		HasNext:    *opts.Page < int(totalPages),
+		HasPrev:    *opts.Page > 1,
+	}, err
 }
 
 func (r *UserRepository) GetUserCount() (int64, error) {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/go-chi/chi"
+	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
 	"github.com/princecee/lema-ai/internal/db/repositories"
@@ -14,6 +15,7 @@ import (
 	"github.com/princecee/lema-ai/internal/services"
 	"github.com/princecee/lema-ai/pkg/json"
 	"github.com/princecee/lema-ai/pkg/response"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 )
@@ -25,7 +27,10 @@ type UserHandlerTestSuite struct {
 }
 
 func (s *UserHandlerTestSuite) SetupSuite() {
-	db := database.GetDBConn()
+	cfg := config.NewConfig("test", "debug")
+	var logger zerolog.Logger
+
+	db := database.GetDBConn(cfg.DSN)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
 	if err != nil {
@@ -42,6 +47,7 @@ func (s *UserHandlerTestSuite) SetupSuite() {
 			LastName:  gofakeit.LastName(),
 			Username:  gofakeit.Username(),
 			Phone:     gofakeit.Phone(),
+			Email:     gofakeit.Email(),
 			Address: models.Address{
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
@@ -56,7 +62,7 @@ func (s *UserHandlerTestSuite) SetupSuite() {
 	}
 
 	r := chi.NewRouter()
-	userRouter := routes.AddUserRoutes(db, userService)
+	userRouter := routes.AddUserRoutes(db, userService, cfg, logger)
 	r.Mount("/api/v1/users", userRouter)
 
 	s.server = httptest.NewServer(r)
