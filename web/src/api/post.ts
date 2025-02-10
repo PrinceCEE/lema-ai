@@ -8,12 +8,10 @@ const createPost = async (payload: {
   body: string;
 }): Promise<Post> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  const response = await axios.post(`${baseUrl}/posts`, {
-    method: "POST",
+  const response = await axios.post(`${baseUrl}/posts`, payload, {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(payload),
   });
 
   const data = response.data as BaseResponse<Post>;
