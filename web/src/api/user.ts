@@ -3,7 +3,6 @@ import { BaseResponse, GetUsersResponse } from "@/types";
 
 const getUsers = async (limit = 5, page = 1): Promise<GetUsersResponse> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  console.log(baseUrl);
   const response = await fetch(`${baseUrl}/users?limit=${limit}&page=${page}`);
   if (!response.ok) {
     throw new Error("Failed to fetch users");
