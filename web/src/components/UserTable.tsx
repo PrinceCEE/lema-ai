@@ -12,7 +12,7 @@ export const UserTable = () => {
   const [page, setPage] = useState(0);
   const limit = 5;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["users", page],
     queryFn: () => userService.getUsers(limit, page + 1),
   });
@@ -20,6 +20,10 @@ export const UserTable = () => {
   const handlePageClick = (event: { selected: number }) => {
     setPage(event.selected);
   };
+
+  if (error) {
+    alert(error.message);
+  }
 
   return (
     <>

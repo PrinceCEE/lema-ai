@@ -7,7 +7,6 @@ const createPost = async (payload: {
   title: string;
   body: string;
 }): Promise<Post> => {
-  console.log(payload);
   const response = await fetch(`${baseUrl}/posts`, {
     method: "POST",
     headers: {
@@ -16,7 +15,15 @@ const createPost = async (payload: {
     body: JSON.stringify(payload),
   });
 
+  if (!response.ok) {
+    throw new Error("Failed to create post");
+  }
+
   const data = (await response.json()) as BaseResponse<Post>;
+  if (!data.success) {
+    throw new Error(data.message);
+  }
+
   return data.data!;
 };
 

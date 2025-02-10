@@ -5,6 +5,8 @@ import { IoAddCircleOutline } from "react-icons/io5";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { ModalOverlay } from "./ModalOverlay";
 import { postService } from "@/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 
 export const PostContainer: FC<{ post?: Post }> = ({ post }) => {
   return (
@@ -38,13 +40,25 @@ export const NewPost = () => {
 };
 
 export const DisplayPost: FC<{ post: Post }> = ({ post }) => {
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+
+  const { mutate, isError } = useMutation({
+    mutationFn: postService.deletePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["posts", userId],
+      });
+    },
+  });
+
+  if (isError) {
+    alert("Failed to delete post");
+  }
+
   const handleClick = async () => {
-    try {
-      await postService.deletePost(post.id);
-      window.location.reload();
-    } catch (err: any) {
-      alert(err.message);
-    }
+    mutate(post.id);
   };
 
   return (

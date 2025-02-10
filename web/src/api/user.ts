@@ -4,7 +4,14 @@ import { BaseResponse, GetUsersResponse } from "@/types";
 
 const getUsers = async (limit = 5, page = 1): Promise<GetUsersResponse> => {
   const response = await fetch(`${baseUrl}/users?limit=${limit}&page=${page}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch users");
+  }
+
   const data = (await response.json()) as BaseResponse<GetUsersResponse>;
+  if (!data.success) {
+    throw new Error(data.message);
+  }
 
   return data.data!;
 };
