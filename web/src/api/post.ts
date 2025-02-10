@@ -1,4 +1,3 @@
-import { baseUrl } from "@/constants";
 import { Post } from "@/models";
 import { BaseResponse } from "@/types";
 
@@ -7,6 +6,7 @@ const createPost = async (payload: {
   title: string;
   body: string;
 }): Promise<Post> => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   const response = await fetch(`${baseUrl}/posts`, {
     method: "POST",
     headers: {
@@ -28,6 +28,7 @@ const createPost = async (payload: {
 };
 
 const getPosts = async (userId: number): Promise<Post[]> => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   const response = await fetch(`${baseUrl}/posts?user_id=${userId}`);
   const data = (await response.json()) as BaseResponse<Post[]>;
 
@@ -35,6 +36,7 @@ const getPosts = async (userId: number): Promise<Post[]> => {
 };
 
 const deletePost = async (postId: number): Promise<void> => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   await fetch(`${baseUrl}/posts/${postId}`, {
     method: "DELETE",
   });
