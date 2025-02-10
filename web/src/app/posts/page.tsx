@@ -1,10 +1,11 @@
 "use client";
+import { Suspense } from "react";
 import { postService, userService } from "@/api";
 import { BackButton, Loader, PostContainer } from "@/components";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function Users() {
+const Users = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
@@ -52,5 +53,13 @@ export default function Users() {
         </>
       </div>
     </div>
+  );
+};
+
+export default function Page() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <Users />
+    </Suspense>
   );
 }

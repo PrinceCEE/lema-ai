@@ -9,7 +9,7 @@ interface ModalProps {
 export function withModal<T extends object>(
   WrappedComponent: ComponentType<T>
 ) {
-  return (props: T & ModalProps) => {
+  const ModalComponent = (props: T & ModalProps) => {
     const { isOpen, onClose, ...rest } = props;
 
     useEffect(() => {
@@ -37,4 +37,10 @@ export function withModal<T extends object>(
       </div>
     );
   };
+
+  ModalComponent.displayName = `withModal(${
+    WrappedComponent.displayName || WrappedComponent.name || "Component"
+  })`;
+
+  return ModalComponent;
 }
