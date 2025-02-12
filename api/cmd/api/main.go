@@ -72,7 +72,7 @@ func main() {
 	var env, loglevel string
 
 	flag.StringVar(&env, "env", config.EnvDevelopment, "Environment to run the server")
-	flag.StringVar(&loglevel, "loglevel", "debug", "Log level for the server")
+	flag.StringVar(&loglevel, "loglevel", "silent", "Log level for the server")
 	flag.Parse()
 
 	if env != "test" {
@@ -82,7 +82,7 @@ func main() {
 	cfg := config.NewConfig(env, loglevel)
 	logger := zerolog.New(os.Stdout).Level(config.GetLoggerLevel(cfg.LOG_LEVEL))
 
-	db := database.GetDBConn(cfg.DSN)
+	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
 	if err != nil {
 		panic(err)

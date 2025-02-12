@@ -2,10 +2,12 @@ package handlers_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/go-chi/chi"
@@ -29,10 +31,10 @@ type PostHandlerTestSuite struct {
 }
 
 func (s *PostHandlerTestSuite) SetupSuite() {
-	cfg := config.NewConfig("test", "debug")
+	cfg := config.NewConfig("test", "silent")
 	var logger zerolog.Logger
 
-	db := database.GetDBConn(cfg.DSN)
+	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
 	if err != nil {
@@ -45,6 +47,9 @@ func (s *PostHandlerTestSuite) SetupSuite() {
 	postService := services.NewPostService(postRepo)
 
 	for i := 0; i < 5; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
 		user := &models.User{
 			FirstName: gofakeit.FirstName(),
 			LastName:  gofakeit.LastName(),
@@ -58,7 +63,7 @@ func (s *PostHandlerTestSuite) SetupSuite() {
 				Zipcode: gofakeit.Zip(),
 			},
 		}
-		err := userRepo.CreateUser(user)
+		err := userRepo.CreateUser(ctx, user)
 		if err != nil {
 			s.Fail(err.Error())
 		}
@@ -91,7 +96,7 @@ func (s *PostHandlerTestSuite) TestPostHandler() {
 				payload, _ := json.WriteJSON(map[string]any{
 					"title":   gofakeit.Sentence(7),
 					"body":    gofakeit.Sentence(40),
-					"user_id": uint(j),
+					"user_id": i,
 				})
 
 				resp, err := s.server.Client().Post(url, "application/json", bytes.NewBuffer(payload))
@@ -105,7 +110,7 @@ func (s *PostHandlerTestSuite) TestPostHandler() {
 				s.Equal("Post created successfully", response.Message)
 				s.NotEmpty(response.Data)
 				s.NotEmpty(response.Data.ID)
-				s.Equal(uint(j), response.Data.UserID)
+				s.Equal(uint(i), response.Data.UserID)
 			}
 		}
 	})

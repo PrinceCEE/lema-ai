@@ -1,7 +1,9 @@
 package services
 
 import (
+	"context"
 	"errors"
+	"time"
 
 	"github.com/princecee/lema-ai/internal/db/models"
 	apperror "github.com/princecee/lema-ai/pkg/error"
@@ -10,9 +12,9 @@ import (
 )
 
 type UserRepository interface {
-	GetUser(userId uint) (*models.User, error)
-	GetUsers(opts pagination.PaginationQuery) (*pagination.GetUsersResult, error)
-	GetUserCount() (int64, error)
+	GetUser(ctx context.Context, userId uint) (*models.User, error)
+	GetUsers(ctx context.Context, opts pagination.PaginationQuery) (*pagination.GetUsersResult, error)
+	GetUserCount(ctx context.Context) (int64, error)
 }
 
 type UserService struct {
@@ -24,7 +26,10 @@ func NewUserService(userRepo UserRepository) *UserService {
 }
 
 func (s *UserService) GetUser(userId uint) (*models.User, error) {
-	user, err := s.userRepo.GetUser(userId)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	user, err := s.userRepo.GetUser(ctx, userId)
 	if err != nil {
 		switch {
 		case errors.Is(err, gorm.ErrRecordNotFound):
@@ -38,7 +43,10 @@ func (s *UserService) GetUser(userId uint) (*models.User, error) {
 }
 
 func (s *UserService) GetUsers(page, limit int) (*pagination.GetUsersResult, error) {
-	users, err := s.userRepo.GetUsers(pagination.PaginationQuery{
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	users, err := s.userRepo.GetUsers(ctx, pagination.PaginationQuery{
 		Page:  &page,
 		Limit: &limit,
 	})
@@ -58,7 +66,10 @@ func (s *UserService) GetUsers(page, limit int) (*pagination.GetUsersResult, err
 }
 
 func (s *UserService) GetUserCount() (int64, error) {
-	count, err := s.userRepo.GetUserCount()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	count, err := s.userRepo.GetUserCount(ctx)
 	if err != nil {
 		return 0, apperror.ErrInternalServer
 	}

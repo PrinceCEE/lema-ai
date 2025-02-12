@@ -1,10 +1,12 @@
 package repositories_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
 	"github.com/princecee/lema-ai/internal/db/repositories"
@@ -20,7 +22,8 @@ type UserRepositoryTestSuite struct {
 }
 
 func (s *UserRepositoryTestSuite) SetupSuite() {
-	db := database.GetDBConn("file::memory:?cache=shared")
+	cfg := config.NewConfig("test", "silent")
+	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{})
 	if err != nil {
@@ -44,6 +47,9 @@ func (s *UserRepositoryTestSuite) TestUserRepository() {
 	t := s.T()
 
 	t.Run("Create user", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
 		now := time.Now()
 		user := &models.User{
 			FirstName: gofakeit.FirstName(),
@@ -59,7 +65,7 @@ func (s *UserRepositoryTestSuite) TestUserRepository() {
 			},
 		}
 
-		err := s.userRepo.CreateUser(user)
+		err := s.userRepo.CreateUser(ctx, user)
 		s.NoError(err)
 		s.NotEmpty(user.ID)
 		s.NotEmpty(user.CreatedAt)
@@ -91,17 +97,22 @@ func (s *UserRepositoryTestSuite) TestUserRepository() {
 	})
 
 	t.Run("Get user count", func(t *testing.T) {
-		count, err := s.userRepo.GetUserCount()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		count, err := s.userRepo.GetUserCount(ctx)
 		s.NoError(err)
 		s.Equal(count, int64(20))
 	})
 
 	t.Run("Get users", func(t *testing.T) {
 		for i := 1; i <= 4; i++ {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
 			page := i
 			limit := 5
 
-			response, err := s.userRepo.GetUsers(pagination.PaginationQuery{
+			response, err := s.userRepo.GetUsers(ctx, pagination.PaginationQuery{
 				Page:  &page,
 				Limit: &limit,
 			})
@@ -112,7 +123,10 @@ func (s *UserRepositoryTestSuite) TestUserRepository() {
 	})
 
 	t.Run("Get user by ID", func(t *testing.T) {
-		user, err := s.userRepo.GetUser(10)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		user, err := s.userRepo.GetUser(ctx, 10)
 
 		s.NoError(err)
 		s.NotEmpty(user)

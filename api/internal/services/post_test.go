@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -22,9 +23,9 @@ type PostServiceTestSuite struct {
 }
 
 func (s *PostServiceTestSuite) SetupSuite() {
-	cfg := config.NewConfig("test", "debug")
+	cfg := config.NewConfig("test", "silent")
+	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 
-	db := database.GetDBConn(cfg.DSN)
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
 	if err != nil {
 		s.Fail(err.Error())
@@ -36,6 +37,9 @@ func (s *PostServiceTestSuite) SetupSuite() {
 	s.postService = services.NewPostService(postRepo)
 
 	for i := 0; i < 5; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
 		user := &models.User{
 			FirstName: gofakeit.FirstName(),
 			LastName:  gofakeit.LastName(),
@@ -49,7 +53,7 @@ func (s *PostServiceTestSuite) SetupSuite() {
 				Zipcode: gofakeit.Zip(),
 			},
 		}
-		err := userRepo.CreateUser(user)
+		err := userRepo.CreateUser(ctx, user)
 		if err != nil {
 			s.Fail(err.Error())
 		}

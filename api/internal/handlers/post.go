@@ -32,9 +32,9 @@ func NewPostHandler(postService PostService, cfg *config.Config, l zerolog.Logge
 }
 
 type createPostData struct {
-	Title  string `json:"title"`
-	Body   string `json:"body"`
-	UserID uint   `json:"userId"`
+	Title  string `json:"title" validate:"required,max=256"`
+	Body   string `json:"body" validate:"required"`
+	UserID uint   `json:"user_id" validate:"required,gt=0"`
 }
 
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -62,6 +62,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		Body:   data.Body,
 		UserID: data.UserID,
 	}
+
 	err = h.postService.CreatePost(post)
 	if err != nil {
 		code := apperror.GetErrorStatusCode(err)

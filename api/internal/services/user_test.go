@@ -1,7 +1,9 @@
 package services_test
 
 import (
+	"context"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/princecee/lema-ai/config"
@@ -20,9 +22,8 @@ type UserServiceTestSuite struct {
 }
 
 func (s *UserServiceTestSuite) SetupSuite() {
-	cfg := config.NewConfig("test", "debug")
-
-	db := database.GetDBConn(cfg.DSN)
+	cfg := config.NewConfig("test", "silent")
+	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{})
 	if err != nil {
@@ -34,6 +35,9 @@ func (s *UserServiceTestSuite) SetupSuite() {
 	s.userService = services.NewUserService(userRepo)
 
 	for i := 0; i < 20; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
 		user := &models.User{
 			FirstName: gofakeit.FirstName(),
 			LastName:  gofakeit.LastName(),
@@ -47,7 +51,7 @@ func (s *UserServiceTestSuite) SetupSuite() {
 				Zipcode: gofakeit.Zip(),
 			},
 		}
-		err := userRepo.CreateUser(user)
+		err := userRepo.CreateUser(ctx, user)
 		if err != nil {
 			s.Fail(err.Error())
 		}

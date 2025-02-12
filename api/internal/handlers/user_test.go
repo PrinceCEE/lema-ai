@@ -1,9 +1,11 @@
 package handlers_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/go-chi/chi"
@@ -14,6 +16,7 @@ import (
 	"github.com/princecee/lema-ai/internal/routes"
 	"github.com/princecee/lema-ai/internal/services"
 	"github.com/princecee/lema-ai/pkg/json"
+	"github.com/princecee/lema-ai/pkg/pagination"
 	"github.com/princecee/lema-ai/pkg/response"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/suite"
@@ -27,10 +30,10 @@ type UserHandlerTestSuite struct {
 }
 
 func (s *UserHandlerTestSuite) SetupSuite() {
-	cfg := config.NewConfig("test", "debug")
+	cfg := config.NewConfig("test", "silent")
 	var logger zerolog.Logger
 
-	db := database.GetDBConn(cfg.DSN)
+	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
 	if err != nil {
@@ -42,6 +45,9 @@ func (s *UserHandlerTestSuite) SetupSuite() {
 	userService := services.NewUserService(userRepo)
 
 	for i := 0; i < 20; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
 		user := &models.User{
 			FirstName: gofakeit.FirstName(),
 			LastName:  gofakeit.LastName(),
@@ -55,7 +61,7 @@ func (s *UserHandlerTestSuite) SetupSuite() {
 				Zipcode: gofakeit.Zip(),
 			},
 		}
-		err := userRepo.CreateUser(user)
+		err := userRepo.CreateUser(ctx, user)
 		if err != nil {
 			s.Fail(err.Error())
 		}
@@ -88,13 +94,16 @@ func (s *UserHandlerTestSuite) TestUserHandler() {
 		s.Equal(http.StatusOK, resp.StatusCode)
 		defer resp.Body.Close()
 
-		response := response.Response[[]*models.User]{}
+		response := response.Response[*pagination.GetUsersResult]{}
 		_ = json.ReadJSON(resp.Body, &response)
 
+		userLen := len(response.Data.Users)
 		s.Equal(true, *response.Success)
 		s.Equal("Users fetched successfully", response.Message)
 		s.NotEmpty(response.Data)
-		s.Equal(5, len(response.Data))
+		s.Equal(int64(5), int64(userLen))
+		s.Equal(int64(1), response.Data.Page)
+		s.Equal(int64(5), response.Data.Limit)
 	})
 
 	t.Run("Get users without pagination query", func(t *testing.T) {
@@ -103,13 +112,16 @@ func (s *UserHandlerTestSuite) TestUserHandler() {
 		s.Equal(http.StatusOK, resp.StatusCode)
 		defer resp.Body.Close()
 
-		response := response.Response[[]*models.User]{}
+		response := response.Response[*pagination.GetUsersResult]{}
 		_ = json.ReadJSON(resp.Body, &response)
 
+		userLen := len(response.Data.Users)
 		s.Equal(true, *response.Success)
 		s.Equal("Users fetched successfully", response.Message)
 		s.NotEmpty(response.Data)
-		s.Equal(10, len(response.Data))
+		s.Equal(int64(10), int64(userLen))
+		s.Equal(int64(1), response.Data.Page)
+		s.Equal(int64(10), response.Data.Limit)
 	})
 
 	t.Run("Get users count", func(t *testing.T) {
