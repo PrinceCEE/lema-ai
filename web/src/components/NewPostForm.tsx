@@ -8,6 +8,7 @@ import { FC } from "react";
 import { useSearchParams } from "next/navigation";
 import { postService } from "@/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 const createPostSchema = object({
   title: string()
@@ -40,10 +41,12 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
         queryKey: ["posts", userId],
       });
     },
-    onError: (err: any) => {
-      alert(
-        err.response?.data.message || err.message || "Failed to create post"
-      );
+    onError: (err: Error | AxiosError) => {
+      if (err instanceof AxiosError) {
+        alert(err.response?.data.message || "Failed to create post");
+      } else {
+        alert(err.message || "Failed to create post");
+      }
     },
   });
 

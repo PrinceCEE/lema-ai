@@ -52,10 +52,12 @@ export const DisplayPost: FC<{ post: Post }> = ({ post }) => {
         queryKey: ["posts", userId],
       });
     },
-    onError: (err: any) => {
-      alert(
-        err.response?.data.message || err.message || "Failed to delete post"
-      );
+    onError: (err: Error | AxiosError) => {
+      if (err instanceof AxiosError) {
+        alert(err.response?.data.message || "Failed to delete post");
+      } else {
+        alert(err.message || "Failed to delete post");
+      }
     },
   });
 
