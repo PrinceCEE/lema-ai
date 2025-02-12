@@ -5,7 +5,9 @@ export const PreviousLabel = () => {
   return (
     <div className="w-max flex items-center justify-center gap-x-2">
       <FaArrowLeft className="h-[11.67px] w-[11.67px] text-tableArrow" />
-      <span className="text-sm font-semibold text-lightblack">Previous</span>
+      <span className="text-sm font-semibold text-lightblack hidden md:inline">
+        Previous
+      </span>
     </div>
   );
 };
@@ -13,7 +15,9 @@ export const PreviousLabel = () => {
 export const NextLabel = () => {
   return (
     <div className="w-max flex items-center justify-center gap-x-2">
-      <span className="text-sm font-semibold text-lightblack">Next</span>
+      <span className="text-sm font-semibold text-lightblack hidden md:inline">
+        Next
+      </span>
       <FaArrowRight className="h-[11.67px] w-[11.67px] text-tableArrow" />
     </div>
   );

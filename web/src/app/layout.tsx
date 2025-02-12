@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <div
-          className={`w-full h-screen pt-[100px] flex justify-center ${inter.className}`}
+          className={`w-full h-screen pt-[100px] px-8 flex justify-center ${inter.className}`}
         >
           <QueryProvider>{children}</QueryProvider>
         </div>

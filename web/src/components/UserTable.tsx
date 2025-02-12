@@ -26,8 +26,8 @@ export const UserTable = () => {
   }
 
   return (
-    <>
-      <div className="border rounded-lg overflow-hidden shadow-md text-lightblack min-h-[332px]">
+    <div className="flex flex-col gap-y-6 justify-center w-full">
+      <div className="border rounded-lg shadow-md text-lightblack min-h-[332px] overflow-hidden">
         <table className="w-full border-collapse">
           <thead>
             <tr className="text-xs font-medium h-[44px] text-center">
@@ -55,8 +55,8 @@ export const UserTable = () => {
                   }}
                 >
                   <td className="pl-4">{`${user.first_name} ${user.last_name}`}</td>
-                  <td className="pl-4">{user.email}</td>
-                  <td className="pl-4 w-[392px] truncate">{`${user.address.street}, ${user.address.state}, ${user.address.city}, ${user.address.zipcode}`}</td>
+                  <td className="pl-4 break-all min-w-[100px]">{user.email}</td>
+                  <td className="pl-4 max-w-[200px] md:max-w-[392px] truncate">{`${user.address.street}, ${user.address.state}, ${user.address.city}, ${user.address.zipcode}`}</td>
                 </tr>
               ))
             )}
@@ -68,16 +68,16 @@ export const UserTable = () => {
           breakLabel="..."
           nextLabel={<NextLabel />}
           previousLabel={<PreviousLabel />}
-          className="flex items-center justify-center gap-2" // Added gap-2 class
+          className="flex items-center justify-center md:gap-x-2 gap-x-1"
           onPageChange={handlePageClick}
-          pageRangeDisplayed={3}
+          pageRangeDisplayed={2}
           pageCount={data?.total_pages || 0}
           renderOnZeroPageCount={null}
-          pageClassName="w-[40px] h-[40px] flex items-center justify-center text-sm font-medium text-lightblack hover:text-paginationBtnHoverText hover:bg-paginationBtnBg active:text-paginationBtnHoverText active:bg-paginationBtnBg cursor-pointer"
+          pageClassName="md:w-[40px] w-[20px] md:h-[40px] h-[20px] flex items-center justify-center md:text-sm text-[10px] leading-[14px] font-medium text-lightblack hover:text-paginationBtnHoverText hover:bg-paginationBtnBg active:text-paginationBtnHoverText active:bg-paginationBtnBg cursor-pointer"
           activeClassName="bg-paginationBtnBg text-paginationBtnHoverText"
           forcePage={page}
         />
       </div>
-    </>
+    </div>
   );
 };
