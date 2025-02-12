@@ -7,10 +7,11 @@ import { ModalOverlay } from "./ModalOverlay";
 import { postService } from "@/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
+import { AxiosError } from "axios";
 
 export const PostContainer: FC<{ post?: Post }> = ({ post }) => {
   return (
-    <div className="w-[270px] h-[293px] border p-6 rounded-lg border-[#D5D7DA]">
+    <div className="mobilesm:w-full md:w-[270px] h-[293px] sm:w-[48%] border p-6 rounded-lg border-[#D5D7DA]">
       {post ? <DisplayPost post={post} /> : <NewPost />}
     </div>
   );
@@ -44,18 +45,19 @@ export const DisplayPost: FC<{ post: Post }> = ({ post }) => {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
-  const { mutate, isError } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: postService.deletePost,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["posts", userId],
       });
     },
+    onError: (err: any) => {
+      alert(
+        err.response?.data.message || err.message || "Failed to delete post"
+      );
+    },
   });
-
-  if (isError) {
-    alert("Failed to delete post");
-  }
 
   const handleClick = async () => {
     mutate(post.id);
@@ -63,8 +65,10 @@ export const DisplayPost: FC<{ post: Post }> = ({ post }) => {
 
   return (
     <div className="w-full h-full flex flex-col gap-4 text-lightblack relative">
-      <h1 className="text-[18px] leading-5 font-medium">{post.title}</h1>
-      <p className="text-sm font-normal overflow-hidden flex-auto overflow-ellipsis">
+      <h1 className="text-[18px] leading-5 font-medium text-left">
+        {post.title}
+      </h1>
+      <p className="text-sm font-normal overflow-hidden flex-auto text-justify overflow-ellipsis">
         {post.body}
       </p>
       <RiDeleteBinLine

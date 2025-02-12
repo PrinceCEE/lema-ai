@@ -94,9 +94,9 @@ func (s *PostHandlerTestSuite) TestPostHandler() {
 		for i := 1; i <= 5; i++ {
 			for j := 1; j <= 5; j++ {
 				payload, _ := json.WriteJSON(map[string]any{
-					"title":   gofakeit.Sentence(7),
-					"body":    gofakeit.Sentence(40),
-					"user_id": i,
+					"title":  gofakeit.Sentence(7),
+					"body":   gofakeit.Sentence(40),
+					"userId": i,
 				})
 
 				resp, err := s.server.Client().Post(url, "application/json", bytes.NewBuffer(payload))

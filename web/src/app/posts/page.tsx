@@ -29,8 +29,8 @@ const Users = () => {
   }
 
   return (
-    <div className="flex flex-col w-[856px] gap-6 h-max">
-      <div className="flex flex-col gap-4 sticky z-10 top-0 bg-white p-6">
+    <div className="md:w-[856px] w-full flex flex-col items-center mx-auto gap-y-6 h-full">
+      <div className="w-full flex flex-col gap-4 sticky z-10 bg-white top-0 py-6">
         <BackButton
           text="Back to Users"
           handleClick={() => {

@@ -27,6 +27,9 @@ export default {
         sm: ["14px", "20px"],
         x: ["36px", "43.57px"],
       },
+      screens: {
+        mobilesm: { max: "639px" },
+      },
     },
   },
   plugins: [],

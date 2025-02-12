@@ -10,8 +10,22 @@ import { postService } from "@/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const createPostSchema = object({
-  title: string().required(),
-  body: string().required(),
+  title: string()
+    .required()
+    .min(5)
+    .max(50)
+    .matches(
+      /^[^{}&*%$#+=<>^\\|/]*$/,
+      "Some special characters are not allowed"
+    )
+    .label("Title"),
+  body: string()
+    .required()
+    .matches(
+      /^[^{}&*%$#+=<>^\\|/]*$/,
+      "Some special characters are not allowed"
+    )
+    .label("Post content"),
 });
 
 export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -19,26 +33,32 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
   const userId = searchParams.get("userId");
 
   const queryClient = useQueryClient();
-  const { mutate, isPending, isError } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: postService.createPost,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["posts", userId],
       });
     },
+    onError: (err: any) => {
+      alert(
+        err.response?.data.message || err.message || "Failed to create post"
+      );
+    },
   });
 
-  if (isError) {
-    alert("Failed to create post");
-  }
-
-  const { register, handleSubmit } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     resolver: yupResolver(createPostSchema),
+    defaultValues: { title: "", body: "" },
   });
 
   return (
     <form
-      className="flex flex-col z-50 p-6 gap-6 bg-white border rounded-lg shadow-sm"
+      className="flex flex-col z-50 p-6 gap-6 md:w-[632px] sm:w-full mobilesm:w-full bg-white border rounded-lg shadow-sm"
       onClick={(e) => e.stopPropagation()}
       onSubmit={handleSubmit(async (data) => {
         mutate({ ...data, userId: Number(userId!) });
@@ -46,8 +66,16 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
       })}
     >
       <h1 className="text-x font-medium text-black">New Post</h1>
-      <Input label="Post title" {...register("title")} />
-      <TextArea label="Post content" {...register("body")} />
+      <Input
+        label="Post title"
+        {...register("title")}
+        errorText={errors.title?.message}
+      />
+      <TextArea
+        label="Post content"
+        {...register("body")}
+        errorText={errors.body?.message}
+      />
       <div className="flex justify-end gap-2">
         <Button
           className="text-[14px] leading-[16.94px] font-normal text-[#334155] bg-white"
