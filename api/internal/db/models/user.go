@@ -21,6 +21,7 @@ type Address struct {
 	State     string    `json:"state" gorm:"not null"`
 	Zipcode   string    `json:"zipcode" gorm:"not null"`
 	UserID    uint      `json:"user_id" gorm:"index;not null"`
+	Posts     []Post    `json:"posts,omitempty" gorm:"foreignKey:UserID"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

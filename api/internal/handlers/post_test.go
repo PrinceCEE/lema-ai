@@ -106,6 +106,7 @@ func (s *PostHandlerTestSuite) TestPostHandler() {
 
 				response := response.Response[*models.Post]{}
 				_ = json.ReadJSON(resp.Body, &response)
+
 				s.Equal(true, *response.Success)
 				s.Equal("Post created successfully", response.Message)
 				s.NotEmpty(response.Data)

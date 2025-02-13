@@ -56,6 +56,18 @@ Lema is a full-stack application built with Golang for the backend and React for
    npm run dev
    ```
 
+## API Endpoints
+
+```
+GET    /api/v1/users?limit=x&page=y          // Get users
+GET    /api/v1/users/:user_id                // Get a user
+GET    /api/v1/users/count                   // Get user's count
+POST   /api/v1/posts                         // Create a post
+GET    /api/v1/posts?user_id=x               // Get a user's posts
+POST   /api/v1/posts/:post_id                // Get a post
+DELETE /api/v1/posts/:post_id                // Delete a post
+```
+
 ## Running the Project Locally
 
 1. Open two terminal windows or tabs.
@@ -66,6 +78,8 @@ Lema is a full-stack application built with Golang for the backend and React for
    cd api
    go run ./cmd/api
    ```
+
+````
 
 3. In the second terminal, navigate to the `web` directory and start the frontend development server:
 
@@ -139,3 +153,4 @@ You can also use the Makefile to run the backend and frontend servers:
    ```sh
    make web
    ```
+````

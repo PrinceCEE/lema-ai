@@ -21,6 +21,7 @@ import (
 	"github.com/princecee/lema-ai/internal/db/models"
 	"github.com/princecee/lema-ai/internal/db/repositories"
 	"github.com/princecee/lema-ai/internal/db/seeder"
+	"github.com/princecee/lema-ai/internal/middlewares"
 	"github.com/princecee/lema-ai/internal/routes"
 	"github.com/princecee/lema-ai/internal/services"
 	"github.com/princecee/lema-ai/pkg/response"
@@ -44,6 +45,7 @@ func addRoutes(db *gorm.DB, cfg *config.Config, l zerolog.Logger) chi.Router {
 	r.Use(middleware.Heartbeat("/ping"))
 	r.Use(middleware.Recoverer)
 	r.Use(cors.AllowAll().Handler)
+	r.Use(middlewares.RequestSize(1 << 20)) // 1mb body limit
 	r.Mount("/api/v1/users", userRouter)
 	r.Mount("/api/v1/posts", postRouter)
 
