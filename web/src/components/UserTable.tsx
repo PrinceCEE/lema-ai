@@ -12,7 +12,7 @@ export const UserTable = () => {
   const dispatch = useAppStoreDispatch();
   const router = useRouter();
   const [page, setPage] = useState(0);
-  const limit = 8;
+  const limit = 6;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["users", page],
