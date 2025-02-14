@@ -12,7 +12,7 @@ export const UserTable = () => {
   const dispatch = useAppStoreDispatch();
   const router = useRouter();
   const [page, setPage] = useState(0);
-  const limit = 5;
+  const limit = 8;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["users", page],
@@ -38,10 +38,10 @@ export const UserTable = () => {
       <div className="border rounded-lg shadow-md text-lightblack min-h-[332px] overflow-x-scroll">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="text-xs font-medium h-[44px] text-center">
-              <th className="pl-4 pt-[13px] text-left">Full Name</th>
-              <th className="pl-4 pt-[13px] text-left">Email Address</th>
-              <th className="pl-4 pt-[13px] text-left">Address</th>
+            <tr className="text-xs font-medium h-11 text-center">
+              <th className="pl-4 py-6 text-left">Full Name</th>
+              <th className="pl-4 py-6 text-left">Email Address</th>
+              <th className="pl-4 py-6 text-left">Address</th>
             </tr>
           </thead>
           <tbody className="text-sm font-normal">
@@ -57,14 +57,14 @@ export const UserTable = () => {
               data?.users?.map((user) => (
                 <tr
                   key={user.id}
-                  className="border-b h-[72px] text-left cursor-pointer"
+                  className="border-b text-left cursor-pointer"
                   onClick={() => {
                     router.push(`/posts?userId=${user.id}`);
                   }}
                 >
-                  <td className="pl-4">{`${user.first_name} ${user.last_name}`}</td>
-                  <td className="pl-4 break-all min-w-[100px]">{user.email}</td>
-                  <td className="pl-4 md:max-w-[392px] truncate">{`${user.address.street}, ${user.address.state}, ${user.address.city}, ${user.address.zipcode}`}</td>
+                  <td className="pl-4 py-6 h-11 whitespace-nowrap">{`${user.first_name} ${user.last_name}`}</td>
+                  <td className="pl-4 py-6 h-11">{user.email}</td>
+                  <td className="pl-4 md:max-w-[392px] py-6 h-11 truncate">{`${user.address.street}, ${user.address.state}, ${user.address.city}, ${user.address.zipcode}`}</td>
                 </tr>
               ))
             )}
