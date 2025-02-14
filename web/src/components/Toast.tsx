@@ -55,7 +55,7 @@ export const ToastContainer = () => {
   }
 
   return (
-    <div className="absolute z-[1000] top-0 right-0 w-max flex flex-col gap-1 p-4">
+    <div className="fixed z-[1000] top-0 right-0 w-max flex flex-col gap-1 p-4">
       {store.notifications.map((n, i) => (
         <Toast key={i} notification={n} index={i} />
       ))}

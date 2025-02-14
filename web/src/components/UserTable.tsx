@@ -35,7 +35,7 @@ export const UserTable = () => {
 
   return (
     <div className="flex flex-col gap-y-6 justify-center w-full">
-      <div className="border rounded-lg shadow-md text-lightblack min-h-[332px] overflow-hidden">
+      <div className="border rounded-lg shadow-md text-lightblack min-h-[332px] overflow-x-scroll">
         <table className="w-full border-collapse">
           <thead>
             <tr className="text-xs font-medium h-[44px] text-center">
@@ -64,7 +64,7 @@ export const UserTable = () => {
                 >
                   <td className="pl-4">{`${user.first_name} ${user.last_name}`}</td>
                   <td className="pl-4 break-all min-w-[100px]">{user.email}</td>
-                  <td className="pl-4 max-w-[200px] md:max-w-[392px] truncate">{`${user.address.street}, ${user.address.state}, ${user.address.city}, ${user.address.zipcode}`}</td>
+                  <td className="pl-4 md:max-w-[392px] truncate">{`${user.address.street}, ${user.address.state}, ${user.address.city}, ${user.address.zipcode}`}</td>
                 </tr>
               ))
             )}

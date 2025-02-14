@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <div
-          className={`w-full h-screen md:pt-[100px] pt-[50px] px-8 flex justify-center ${inter.className}`}
+          className={`w-full h-screen md:pt-[100px] pt-[50px] px-6 flex justify-center ${inter.className}`}
         >
           <AppStoreProvider>
             <ToastContainer />
