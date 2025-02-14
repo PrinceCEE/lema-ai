@@ -8,6 +8,7 @@ import { postService } from "@/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { AxiosError } from "axios";
+import { useAppStoreDispatch } from "@/hooks";
 
 export const PostContainer: FC<{ post?: Post }> = ({ post }) => {
   return (
@@ -41,6 +42,7 @@ export const NewPost = () => {
 };
 
 export const DisplayPost: FC<{ post: Post }> = ({ post }) => {
+  const dispatch = useAppStoreDispatch();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
@@ -51,12 +53,32 @@ export const DisplayPost: FC<{ post: Post }> = ({ post }) => {
       queryClient.invalidateQueries({
         queryKey: ["posts", userId],
       });
+
+      dispatch({
+        type: "ADD_NOTIFICATION",
+        payload: {
+          isSuccess: true,
+          text: "Post deleted successfully",
+        },
+      });
     },
     onError: (err: Error | AxiosError) => {
       if (err instanceof AxiosError) {
-        alert(err.response?.data.message || "Failed to delete post");
+        dispatch({
+          type: "ADD_NOTIFICATION",
+          payload: {
+            isSuccess: false,
+            text: err.response?.data.message || "Failed to delete post",
+          },
+        });
       } else {
-        alert(err.message || "Failed to delete post");
+        dispatch({
+          type: "ADD_NOTIFICATION",
+          payload: {
+            isSuccess: false,
+            text: err.message || "Failed to delete post",
+          },
+        });
       }
     },
   });
@@ -67,8 +89,8 @@ export const DisplayPost: FC<{ post: Post }> = ({ post }) => {
 
   return (
     <div className="w-full h-full flex flex-col gap-4 text-lightblack relative">
-      <h1 className="text-[18px] leading-5 font-medium text-left">
-        {post.title}
+      <h1 className="text-[18px] leading-5 font-medium py-1 text-left">
+        {post.title.length > 50 ? post.title.slice(0, 50) + "..." : post.title}
       </h1>
       <p className="text-sm font-normal overflow-hidden flex-auto text-justify overflow-ellipsis">
         {post.body}

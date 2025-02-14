@@ -9,12 +9,12 @@ import { useSearchParams } from "next/navigation";
 import { postService } from "@/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useAppStoreDispatch } from "@/hooks";
 
 const createPostSchema = object({
   title: string()
     .required()
     .min(5)
-    .max(50)
     .matches(
       /^[^{}&*%$#+=<>^\\|/]*$/,
       "Some special characters are not allowed"
@@ -32,6 +32,7 @@ const createPostSchema = object({
 export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
+  const dispatch = useAppStoreDispatch();
 
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
@@ -40,12 +41,32 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
       queryClient.invalidateQueries({
         queryKey: ["posts", userId],
       });
+
+      dispatch({
+        type: "ADD_NOTIFICATION",
+        payload: {
+          text: "Post added successfully",
+          isSuccess: true,
+        },
+      });
     },
     onError: (err: Error | AxiosError) => {
       if (err instanceof AxiosError) {
-        alert(err.response?.data.message || "Failed to create post");
+        dispatch({
+          type: "ADD_NOTIFICATION",
+          payload: {
+            text: err.response?.data.message || "Failed to create post",
+            isSuccess: false,
+          },
+        });
       } else {
-        alert(err.message || "Failed to create post");
+        dispatch({
+          type: "ADD_NOTIFICATION",
+          payload: {
+            text: err.message || "Failed to create post",
+            isSuccess: false,
+          },
+        });
       }
     },
   });
@@ -81,16 +102,18 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
       />
       <div className="flex justify-end gap-2">
         <Button
-          className="text-[14px] leading-[16.94px] font-normal text-[#334155] bg-white"
-          text="Cancel"
+          className="flex justify-center items-center px-4 py-[11.5px] border rounded-[4px] text-[14px] leading-[16.94px] font-normal text-[#334155] bg-white"
           onClick={() => onClose()}
-        />
+        >
+          Cancel
+        </Button>
         <Button
-          className="bg-[#334155] font-semibold text-sm text-white"
-          text="Publish"
+          className="flex justify-center items-center px-4 py-[11.5px] border rounded-[4px] bg-[#334155] font-semibold text-sm text-white"
           isSubmit
           isDisabled={isPending}
-        />
+        >
+          Publish
+        </Button>
       </div>
     </form>
   );

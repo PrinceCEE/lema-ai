@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import { NextLabel, PreviousLabel, Loader } from "@/components";
 import { userService } from "@/api";
 import { useState } from "react";
+import { useAppStoreDispatch } from "@/hooks";
 
 export const UserTable = () => {
+  const dispatch = useAppStoreDispatch();
   const router = useRouter();
   const [page, setPage] = useState(0);
   const limit = 5;
@@ -22,7 +24,13 @@ export const UserTable = () => {
   };
 
   if (error) {
-    alert(error.message);
+    dispatch({
+      type: "ADD_NOTIFICATION",
+      payload: {
+        text: error.message,
+        isSuccess: false,
+      },
+    });
   }
 
   return (

@@ -24,7 +24,6 @@ func GetDBConn(dsn string, maxIdleConn, maxOpenConn int, maxConnLifetime time.Du
 	}
 	sqlDB.SetMaxIdleConns(maxIdleConn)
 	sqlDB.SetMaxOpenConns(maxOpenConn)
-	sqlDB.SetConnMaxLifetime(maxConnLifetime)
 	return db
 }
 
