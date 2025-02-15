@@ -51,9 +51,8 @@ export const TextArea: FC<TextAreaProps> = ({ label, errorText, ...props }) => {
       <div className="w-full flex flex-col gap-y-[5px]">
         <div className="w-full border rounded-[4px] px-4 py-[10px]">
           <textarea
-            className="w-full placeholder-[#94A3B8] text-sm font-normal bg-[transparent] outline-none focus:outline-none border-none focus:border-none resize-none"
+            className="w-full placeholder-[#94A3B8] text-sm font-normal bg-[transparent] outline-none focus:outline-none border-none focus:border-none resize-none h-[179px]"
             placeholder="Write something mind-blowing"
-            rows={5}
             {...props}
           />
         </div>

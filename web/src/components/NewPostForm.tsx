@@ -1,5 +1,6 @@
 "use client";
 import { useForm } from "react-hook-form";
+import { LuLoaderCircle } from "react-icons/lu";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { object, string } from "yup";
 import { Input, TextArea } from "./Input";
@@ -49,6 +50,7 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
           isSuccess: true,
         },
       });
+      onClose();
     },
     onError: (err: Error | AxiosError) => {
       if (err instanceof AxiosError) {
@@ -86,7 +88,6 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
       onClick={(e) => e.stopPropagation()}
       onSubmit={handleSubmit(async (data) => {
         mutate({ ...data, userId: Number(userId!) });
-        onClose();
       })}
     >
       <h1 className="text-x font-medium text-black">New Post</h1>
@@ -108,11 +109,14 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
           Cancel
         </Button>
         <Button
-          className="flex justify-center items-center px-4 py-[11.5px] border rounded-[4px] bg-[#334155] font-semibold text-sm text-white"
+          className="flex justify-center gap-x-1 items-center px-4 py-[11.5px] border rounded-[4px] bg-[#334155] font-semibold text-sm text-white"
           isSubmit
           isDisabled={isPending}
         >
-          Publish
+          {isPending && (
+            <LuLoaderCircle className="inline-block animate-spin" />
+          )}
+          <span className="inline-block">Publish</span>
         </Button>
       </div>
     </form>

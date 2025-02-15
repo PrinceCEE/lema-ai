@@ -30,7 +30,7 @@ export function withModal<T extends object>(
 
     return (
       <div
-        className="fixed inset-0 p-8 bg-black bg-opacity-50 w-screen flex justify-center items-center z-30"
+        className="fixed inset-0 p-8 bg-black bg-opacity-50 w-screen h-screen top-0 left-0 right-0 bottom-0 overflow-hidden flex justify-center items-center z-30"
         onClick={onClose}
       >
         <WrappedComponent {...(rest as T)} onClose={onClose} />
