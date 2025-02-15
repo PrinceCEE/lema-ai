@@ -114,7 +114,7 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
           isDisabled={isPending}
         >
           <span className="inline-block">Publish</span>
-          {isPending && <Loader bg="bg-white" />}
+          {isPending && <Loader bg="bg-white" isSmall />}
         </Button>
       </div>
     </form>
