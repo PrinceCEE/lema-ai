@@ -1,4 +1,5 @@
 import { UserTable } from "@/components";
+import { Suspense } from "react";
 
 export default function Users() {
   return (
@@ -6,7 +7,9 @@ export default function Users() {
       <h1 className="text-xl font-medium self-start text-left p-0 text-black">
         Users
       </h1>
-      <UserTable />
+      <Suspense fallback={<div>Loading...</div>}>
+        <UserTable />
+      </Suspense>
     </div>
   );
 }

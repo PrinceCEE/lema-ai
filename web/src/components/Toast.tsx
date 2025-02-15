@@ -21,7 +21,7 @@ const Toast: FC<{
     }, 3000);
 
     return () => clearTimeout(timeoutId);
-  }, [index]);
+  }, [index, dispatch]);
 
   const handleClick = () => {
     dispatch({
