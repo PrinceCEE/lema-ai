@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/google/uuid"
 	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
@@ -24,6 +25,7 @@ type PostRepositoryTestSuite struct {
 
 func (s *PostRepositoryTestSuite) SetupSuite() {
 	cfg := config.NewConfig("test", "silent")
+	cfg.DSN = "file::memory:?cache=shared"
 	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
@@ -40,12 +42,13 @@ func (s *PostRepositoryTestSuite) SetupSuite() {
 		defer cancel()
 
 		user := &models.User{
-			FirstName: gofakeit.FirstName(),
-			LastName:  gofakeit.LastName(),
-			Username:  gofakeit.Username(),
-			Phone:     gofakeit.Phone(),
-			Email:     gofakeit.Email(),
+			ID:       uuid.NewString(),
+			Name:     gofakeit.Name(),
+			Username: gofakeit.Username(),
+			Phone:    gofakeit.Phone(),
+			Email:    gofakeit.Email(),
 			Address: models.Address{
+				ID:      uuid.NewString(),
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
 				State:   gofakeit.State(),
@@ -81,6 +84,7 @@ func (s *PostRepositoryTestSuite) TestPostRepository() {
 			for i := 0; i < 5; i++ {
 				now := time.Now()
 				post := models.Post{
+					ID:     uuid.NewString(),
 					Title:  gofakeit.Sentence(7),
 					Body:   gofakeit.Sentence(40),
 					UserID: user.ID,
@@ -97,40 +101,39 @@ func (s *PostRepositoryTestSuite) TestPostRepository() {
 	})
 
 	t.Run("Get post", func(t *testing.T) {
-		for _, user := range s.users {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-			posts, err := s.postRepo.GetPosts(ctx, user.ID)
+		user := s.users[0]
 
-			s.NoError(err)
-			s.NotEmpty(posts)
-			s.GreaterOrEqual(len(posts), 4)
-		}
-	})
-
-	t.Run("Get post by ID", func(t *testing.T) {
-		for i := 1; i <= 10; i++ {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-
-			post, err := s.postRepo.GetPost(ctx, uint(i))
-			s.NoError(err)
-			s.NotEmpty(post)
-			s.Equal(post.ID, uint(i))
-		}
-	})
-
-	t.Run("Delete post", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		err := s.postRepo.DeletePost(ctx, 20)
-		s.NoError(err)
+		posts, err := s.postRepo.GetPosts(ctx, user.ID)
 
-		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		post, err := s.postRepo.GetPost(ctx, 20)
-		s.Error(err)
-		s.NotEqual(post.ID, 20)
+		s.NoError(err)
+		s.NotEmpty(posts)
+		s.GreaterOrEqual(len(posts), 4)
+
+		t.Run("Get post by ID", func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			post, err := s.postRepo.GetPost(ctx, posts[0].ID)
+			s.NoError(err)
+			s.NotEmpty(post)
+			s.Equal(posts[0].ID, post.ID)
+		})
+
+		t.Run("Delete post", func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			err := s.postRepo.DeletePost(ctx, posts[0].ID)
+			s.NoError(err)
+
+			ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			post, err := s.postRepo.GetPost(ctx, posts[0].ID)
+			s.Error(err)
+			s.Empty(post)
+		})
 	})
 }
 

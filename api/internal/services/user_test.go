@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/google/uuid"
 	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
@@ -23,6 +24,7 @@ type UserServiceTestSuite struct {
 
 func (s *UserServiceTestSuite) SetupSuite() {
 	cfg := config.NewConfig("test", "silent")
+	cfg.DSN = "file::memory:?cache=shared"
 	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{})
@@ -39,12 +41,13 @@ func (s *UserServiceTestSuite) SetupSuite() {
 		defer cancel()
 
 		user := &models.User{
-			FirstName: gofakeit.FirstName(),
-			LastName:  gofakeit.LastName(),
-			Username:  gofakeit.Username(),
-			Phone:     gofakeit.Phone(),
-			Email:     gofakeit.Email(),
+			ID:       uuid.NewString(),
+			Name:     gofakeit.Name(),
+			Username: gofakeit.Username(),
+			Phone:    gofakeit.Phone(),
+			Email:    gofakeit.Email(),
 			Address: models.Address{
+				ID:      uuid.NewString(),
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
 				State:   gofakeit.State(),
@@ -67,40 +70,39 @@ func (s *UserServiceTestSuite) TearDownSuite() {
 	sqlDB.Close()
 }
 
-func (s *UserServiceTestSuite) TestGetUser() {
+func (s *UserServiceTestSuite) TestUserService() {
 	t := s.T()
+	var users []*models.User
 
-	t.Run("Get existing users", func(t *testing.T) {
-		for i := 1; i <= 20; i++ {
-			user, err := s.userService.GetUser(uint(i))
+	t.Run("Get users", func(t *testing.T) {
+		response, err := s.userService.GetUsers(1, 20)
 
-			s.NoError(err)
-			s.NotNil(user)
-			s.Equal(user.ID, uint(i))
-		}
+		s.NoError(err)
+		s.Equal(20, len(response.Users))
+
+		users = response.Users
+	})
+
+	t.Run("Get user by ID", func(t *testing.T) {
+		user, err := s.userService.GetUser(users[0].ID)
+
+		s.NoError(err)
+		s.NotNil(user)
+		s.Equal(users[0].ID, user.ID)
 	})
 
 	t.Run("Get non-existing user", func(t *testing.T) {
-		user, err := s.userService.GetUser(21)
+		user, err := s.userService.GetUser(uuid.NewString())
 
 		s.Error(err)
 		s.Nil(user)
 	})
-}
 
-func (s *UserServiceTestSuite) TestGetUsers() {
-	for i := 1; i <= 4; i++ {
-		response, err := s.userService.GetUsers(i, 5)
-
+	t.Run("Get user count", func(t *testing.T) {
+		count, err := s.userService.GetUserCount()
 		s.NoError(err)
-		s.Equal(5, len(response.Users))
-	}
-}
-
-func (s *UserServiceTestSuite) TestGetUserCount() {
-	count, err := s.userService.GetUserCount()
-	s.NoError(err)
-	s.Equal(count, int64(20))
+		s.Equal(count, int64(20))
+	})
 }
 
 func TestUserService(t *testing.T) {

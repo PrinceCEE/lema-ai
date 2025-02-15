@@ -27,7 +27,7 @@ type Config struct {
 func NewConfig(env, loglevel string) *Config {
 	return &Config{
 		PORT:              getEnv("PORT", "5001"),
-		DSN:               getEnv("DSN", "file::memory:?cache=shared"),
+		DSN:               getEnv("DSN", "data.db"),
 		ENV:               getEnv("ENV", env),
 		LOG_LEVEL:         getEnv("LOG_LEVEL", loglevel),
 		MAX_IDLE_CONNS:    getEnvAsInt("MAX_IDLE_CONNS", 10),

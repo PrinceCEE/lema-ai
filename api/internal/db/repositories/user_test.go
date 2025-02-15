@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/google/uuid"
 	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
@@ -23,6 +24,7 @@ type UserRepositoryTestSuite struct {
 
 func (s *UserRepositoryTestSuite) SetupSuite() {
 	cfg := config.NewConfig("test", "silent")
+	cfg.DSN = "file::memory:?cache=shared"
 	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{})
@@ -45,6 +47,7 @@ func (s *UserRepositoryTestSuite) TearDownSuite() {
 
 func (s *UserRepositoryTestSuite) TestUserRepository() {
 	t := s.T()
+	var userId string
 
 	t.Run("Create user", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -52,12 +55,13 @@ func (s *UserRepositoryTestSuite) TestUserRepository() {
 
 		now := time.Now()
 		user := &models.User{
-			FirstName: gofakeit.FirstName(),
-			LastName:  gofakeit.LastName(),
-			Username:  gofakeit.Username(),
-			Phone:     gofakeit.Phone(),
-			Email:     gofakeit.Email(),
+			ID:       uuid.NewString(),
+			Name:     gofakeit.Name(),
+			Username: gofakeit.Username(),
+			Phone:    gofakeit.Phone(),
+			Email:    gofakeit.Email(),
 			Address: models.Address{
+				ID:      uuid.NewString(),
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
 				State:   gofakeit.State(),
@@ -73,15 +77,17 @@ func (s *UserRepositoryTestSuite) TestUserRepository() {
 		s.Equal(user.CreatedAt.After(now), true)
 		s.Equal(user.ID, user.Address.UserID)
 
+		userId = user.ID
 		_users := make([]*models.User, 19)
 		for i := 0; i < 19; i++ {
 			user := &models.User{
-				FirstName: gofakeit.FirstName(),
-				LastName:  gofakeit.LastName(),
-				Username:  gofakeit.Username(),
-				Phone:     gofakeit.Phone(),
-				Email:     gofakeit.Email(),
+				ID:       uuid.NewString(),
+				Name:     gofakeit.Name(),
+				Username: gofakeit.Username(),
+				Phone:    gofakeit.Phone(),
+				Email:    gofakeit.Email(),
 				Address: models.Address{
+					ID:      uuid.NewString(),
 					Street:  gofakeit.StreetName(),
 					City:    gofakeit.City(),
 					State:   gofakeit.State(),
@@ -126,11 +132,10 @@ func (s *UserRepositoryTestSuite) TestUserRepository() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		user, err := s.userRepo.GetUser(ctx, 10)
-
+		user, err := s.userRepo.GetUser(ctx, userId)
 		s.NoError(err)
 		s.NotEmpty(user)
-		s.Equal(uint(10), user.ID)
+		s.Equal(userId, user.ID)
 	})
 }
 

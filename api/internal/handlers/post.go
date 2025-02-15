@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/google/uuid"
 	"github.com/princecee/lema-ai/config"
 	"github.com/princecee/lema-ai/internal/db/models"
 	apperror "github.com/princecee/lema-ai/pkg/error"
@@ -16,9 +16,9 @@ import (
 
 type PostService interface {
 	CreatePost(p *models.Post) error
-	GetPost(postId uint) (*models.Post, error)
-	GetPosts(userId uint) ([]*models.Post, error)
-	DeletePost(postId uint) error
+	GetPost(postId string) (*models.Post, error)
+	GetPosts(userId string) ([]*models.Post, error)
+	DeletePost(postId string) error
 }
 
 type PostHandler struct {
@@ -34,7 +34,7 @@ func NewPostHandler(postService PostService, cfg *config.Config, l zerolog.Logge
 type createPostData struct {
 	Title  string `json:"title" validate:"required,min=5"`
 	Body   string `json:"body" validate:"required"`
-	UserID uint   `json:"userId" validate:"required,gt=0"`
+	UserID string `json:"userId" validate:"required,uuid"`
 }
 
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +58,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	post := &models.Post{
+		ID:     uuid.NewString(),
 		Title:  data.Title,
 		Body:   data.Body,
 		UserID: data.UserID,
@@ -79,14 +80,14 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 	resp := response.Response[any]{}
 
-	postId, err := strconv.Atoi(chi.URLParam(r, "post_id"))
-	if err != nil {
-		resp.Message = err.Error()
+	postId := chi.URLParam(r, "post_id")
+	if !validator.IsValidUUID(postId) {
+		resp.Message = "Invalid post ID"
 		response.SendErrorResponse(w, resp, http.StatusBadRequest)
 		return
 	}
 
-	post, err := h.postService.GetPost(uint(postId))
+	post, err := h.postService.GetPost(postId)
 	if err != nil {
 		code := apperror.GetErrorStatusCode(err)
 		resp.Message = err.Error()
@@ -102,14 +103,14 @@ func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	resp := response.Response[any]{}
 
-	userId, err := strconv.Atoi(r.URL.Query().Get("user_id"))
-	if err != nil {
+	userId := r.URL.Query().Get("user_id")
+	if !validator.IsValidUUID(userId) {
 		resp.Message = "Invalid user ID"
 		response.SendErrorResponse(w, resp, http.StatusBadRequest)
 		return
 	}
 
-	posts, err := h.postService.GetPosts(uint(userId))
+	posts, err := h.postService.GetPosts(userId)
 	if err != nil {
 		code := apperror.GetErrorStatusCode(err)
 		resp.Message = err.Error()
@@ -125,14 +126,14 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	resp := response.Response[any]{}
 
-	postId, err := strconv.Atoi(chi.URLParam(r, "post_id"))
-	if err != nil {
-		resp.Message = err.Error()
+	postId := chi.URLParam(r, "post_id")
+	if !validator.IsValidUUID(postId) {
+		resp.Message = "Invalid post ID"
 		response.SendErrorResponse(w, resp, http.StatusBadRequest)
 		return
 	}
 
-	err = h.postService.DeletePost(uint(postId))
+	err := h.postService.DeletePost(postId)
 	if err != nil {
 		code := apperror.GetErrorStatusCode(err)
 		resp.Message = err.Error()

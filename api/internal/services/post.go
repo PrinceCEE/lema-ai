@@ -12,9 +12,9 @@ import (
 
 type PostRepository interface {
 	CreatePost(ctx context.Context, p *models.Post) error
-	GetPost(ctx context.Context, postId uint) (*models.Post, error)
-	GetPosts(ctx context.Context, userId uint) ([]*models.Post, error)
-	DeletePost(ctx context.Context, postId uint) error
+	GetPost(ctx context.Context, postId string) (*models.Post, error)
+	GetPosts(ctx context.Context, userId string) ([]*models.Post, error)
+	DeletePost(ctx context.Context, postId string) error
 }
 
 type PostService struct {
@@ -42,7 +42,7 @@ func (s *PostService) CreatePost(p *models.Post) error {
 	return nil
 }
 
-func (s *PostService) GetPost(postId uint) (*models.Post, error) {
+func (s *PostService) GetPost(postId string) (*models.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -59,7 +59,7 @@ func (s *PostService) GetPost(postId uint) (*models.Post, error) {
 	return post, nil
 }
 
-func (s *PostService) GetPosts(userId uint) ([]*models.Post, error) {
+func (s *PostService) GetPosts(userId string) ([]*models.Post, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -76,7 +76,7 @@ func (s *PostService) GetPosts(userId uint) ([]*models.Post, error) {
 	return posts, nil
 }
 
-func (s *PostService) DeletePost(postId uint) error {
+func (s *PostService) DeletePost(postId string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

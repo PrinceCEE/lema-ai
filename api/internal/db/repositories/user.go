@@ -21,9 +21,9 @@ func (r *UserRepository) CreateUser(ctx context.Context, u *models.User) error {
 	return result.Error
 }
 
-func (r *UserRepository) GetUser(ctx context.Context, userId uint) (*models.User, error) {
+func (r *UserRepository) GetUser(ctx context.Context, userId string) (*models.User, error) {
 	u := models.User{}
-	err := r.db.WithContext(ctx).Preload("Address").First(&u, userId).Error
+	err := r.db.WithContext(ctx).Preload("Address").Where("id = ?", userId).First(&u).Error
 	return &u, err
 }
 

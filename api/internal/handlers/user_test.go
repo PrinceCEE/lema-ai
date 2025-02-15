@@ -9,6 +9,7 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/go-chi/chi"
+	"github.com/google/uuid"
 	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
@@ -31,6 +32,7 @@ type UserHandlerTestSuite struct {
 
 func (s *UserHandlerTestSuite) SetupSuite() {
 	cfg := config.NewConfig("test", "silent")
+	cfg.DSN = "file::memory:?cache=shared"
 	var logger zerolog.Logger
 
 	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
@@ -49,12 +51,13 @@ func (s *UserHandlerTestSuite) SetupSuite() {
 		defer cancel()
 
 		user := &models.User{
-			FirstName: gofakeit.FirstName(),
-			LastName:  gofakeit.LastName(),
-			Username:  gofakeit.Username(),
-			Phone:     gofakeit.Phone(),
-			Email:     gofakeit.Email(),
+			ID:       uuid.NewString(),
+			Name:     gofakeit.Name(),
+			Username: gofakeit.Username(),
+			Phone:    gofakeit.Phone(),
+			Email:    gofakeit.Email(),
 			Address: models.Address{
+				ID:      uuid.NewString(),
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
 				State:   gofakeit.State(),
@@ -87,6 +90,7 @@ func (s *UserHandlerTestSuite) TearDownSuite() {
 func (s *UserHandlerTestSuite) TestUserHandler() {
 	t := s.T()
 	url := s.server.URL + "/api/v1/users"
+	var userId string
 
 	t.Run("Get users with pagination query", func(t *testing.T) {
 		resp, err := s.server.Client().Get(url + "?page=1&limit=5")
@@ -104,6 +108,8 @@ func (s *UserHandlerTestSuite) TestUserHandler() {
 		s.Equal(int64(5), int64(userLen))
 		s.Equal(int64(1), response.Data.Page)
 		s.Equal(int64(5), response.Data.Limit)
+
+		userId = response.Data.Users[0].ID
 	})
 
 	t.Run("Get users without pagination query", func(t *testing.T) {
@@ -140,7 +146,7 @@ func (s *UserHandlerTestSuite) TestUserHandler() {
 	})
 
 	t.Run("Get user by ID", func(t *testing.T) {
-		resp, err := s.server.Client().Get(url + "/1")
+		resp, err := s.server.Client().Get(url + "/" + userId)
 		s.NoError(err)
 		s.Equal(http.StatusOK, resp.StatusCode)
 		defer resp.Body.Close()
@@ -154,8 +160,8 @@ func (s *UserHandlerTestSuite) TestUserHandler() {
 		s.NotEmpty(response.Data.ID)
 	})
 
-	t.Run("Get user by out of range ID", func(t *testing.T) {
-		resp, err := s.server.Client().Get(url + "/100")
+	t.Run("Get user with non-existent ID", func(t *testing.T) {
+		resp, err := s.server.Client().Get(url + "/" + uuid.NewString())
 		s.NoError(err)
 		s.Equal(http.StatusNotFound, resp.StatusCode)
 		defer resp.Body.Close()

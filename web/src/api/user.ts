@@ -12,7 +12,7 @@ const getUsers = async (limit = 5, page = 1): Promise<GetUsersResponse> => {
   if (!data.success) {
     throw new Error(data.message);
   }
-
+  console.log(data.data);
   return data.data!;
 };
 

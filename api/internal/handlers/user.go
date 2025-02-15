@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi"
 	"github.com/princecee/lema-ai/config"
@@ -17,7 +16,7 @@ import (
 type UserService interface {
 	GetUsers(page, limt int) (*pagination.GetUsersResult, error)
 	GetUserCount() (int64, error)
-	GetUser(id uint) (*models.User, error)
+	GetUser(id string) (*models.User, error)
 }
 
 type UserHandler struct {
@@ -89,14 +88,14 @@ func (h *UserHandler) GetUsersCount(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	resp := response.Response[any]{}
 
-	userId, err := strconv.Atoi(chi.URLParam(r, "user_id"))
-	if err != nil {
+	userId := chi.URLParam(r, "user_id")
+	if !validator.IsValidUUID(userId) {
 		resp.Message = "Invalid user ID"
 		response.SendErrorResponse(w, resp, http.StatusBadRequest)
 		return
 	}
 
-	user, err := h.userService.GetUser(uint(userId))
+	user, err := h.userService.GetUser(userId)
 	if err != nil {
 		code := apperror.GetErrorStatusCode(err)
 		resp.Message = err.Error()

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/google/uuid"
 	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
 	"github.com/princecee/lema-ai/internal/db/models"
@@ -24,6 +25,7 @@ type PostServiceTestSuite struct {
 
 func (s *PostServiceTestSuite) SetupSuite() {
 	cfg := config.NewConfig("test", "silent")
+	cfg.DSN = "file::memory:?cache=shared"
 	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
 
 	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
@@ -41,12 +43,13 @@ func (s *PostServiceTestSuite) SetupSuite() {
 		defer cancel()
 
 		user := &models.User{
-			FirstName: gofakeit.FirstName(),
-			LastName:  gofakeit.LastName(),
-			Username:  gofakeit.Username(),
-			Phone:     gofakeit.Phone(),
-			Email:     gofakeit.Email(),
+			ID:       uuid.NewString(),
+			Name:     gofakeit.Name(),
+			Username: gofakeit.Username(),
+			Phone:    gofakeit.Phone(),
+			Email:    gofakeit.Email(),
 			Address: models.Address{
+				ID:      uuid.NewString(),
 				Street:  gofakeit.StreetName(),
 				City:    gofakeit.City(),
 				State:   gofakeit.State(),
@@ -71,52 +74,56 @@ func (s *PostServiceTestSuite) TearDownSuite() {
 	sqlDB.Close()
 }
 
-func (s *PostServiceTestSuite) TestCreatePost() {
-	for _, user := range s.users {
-		for i := 0; i < 5; i++ {
-			now := time.Now()
-			post := models.Post{
-				Title:  gofakeit.Sentence(7),
-				Body:   gofakeit.Sentence(40),
-				UserID: user.ID,
+func (s *PostServiceTestSuite) TestPostService() {
+	t := s.T()
+	var postId string
+
+	t.Run("Create post", func(t *testing.T) {
+		for _, user := range s.users {
+			for i := 0; i < 5; i++ {
+				now := time.Now()
+				post := models.Post{
+					ID:     uuid.NewString(),
+					Title:  gofakeit.Sentence(7),
+					Body:   gofakeit.Sentence(40),
+					UserID: user.ID,
+				}
+
+				err := s.postService.CreatePost(&post)
+				s.NoError(err)
+				s.NotEmpty(post.ID)
+				s.NotEmpty(post.CreatedAt)
+				s.NotEmpty(post.UpdatedAt)
+				s.Equal(post.CreatedAt.After(now), true)
 			}
-
-			err := s.postService.CreatePost(&post)
-			s.NoError(err)
-			s.NotEmpty(post.ID)
-			s.NotEmpty(post.CreatedAt)
-			s.NotEmpty(post.UpdatedAt)
-			s.Equal(post.CreatedAt.After(now), true)
 		}
-	}
-}
+	})
 
-func (s *PostServiceTestSuite) TestGetPost() {
-	for i := 1; i <= 10; i++ {
-		post, err := s.postService.GetPost(uint(i))
-		s.NoError(err)
-		s.NotEmpty(post)
-		s.Equal(post.ID, uint(i))
-	}
-}
-
-func (s *PostServiceTestSuite) TestGetPosts() {
-	for _, user := range s.users {
-		posts, err := s.postService.GetPosts(user.ID)
+	t.Run("Get posts", func(t *testing.T) {
+		posts, err := s.postService.GetPosts(s.users[0].ID)
 
 		s.NoError(err)
 		s.NotEmpty(posts)
 		s.GreaterOrEqual(len(posts), 4)
-	}
-}
 
-func (s *PostServiceTestSuite) TestDeletePost() {
-	err := s.postService.DeletePost(20)
-	s.NoError(err)
+		postId = posts[0].ID
+	})
 
-	post, err := s.postService.GetPost(20)
-	s.Error(err)
-	s.Nil(post)
+	t.Run("Get post by ID", func(t *testing.T) {
+		post, err := s.postService.GetPost(postId)
+		s.NoError(err)
+		s.NotEmpty(post)
+		s.Equal(postId, post.ID)
+	})
+
+	t.Run("Delete post", func(t *testing.T) {
+		err := s.postService.DeletePost(postId)
+		s.NoError(err)
+
+		post, err := s.postService.GetPost(postId)
+		s.Error(err)
+		s.Nil(post)
+	})
 }
 
 func TestPostService(t *testing.T) {

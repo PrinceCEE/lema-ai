@@ -18,9 +18,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/princecee/lema-ai/config"
 	database "github.com/princecee/lema-ai/internal/db"
-	"github.com/princecee/lema-ai/internal/db/models"
 	"github.com/princecee/lema-ai/internal/db/repositories"
-	"github.com/princecee/lema-ai/internal/db/seeder"
 	"github.com/princecee/lema-ai/internal/middlewares"
 	"github.com/princecee/lema-ai/internal/routes"
 	"github.com/princecee/lema-ai/internal/services"
@@ -63,9 +61,9 @@ func addRoutes(db *gorm.DB, cfg *config.Config, l zerolog.Logger) chi.Router {
 		response.SendErrorResponse(w, resp, http.StatusMethodNotAllowed)
 	})
 
-	if cfg.ENV == config.EnvDevelopment {
-		seeder.Seed(userRepo, postRepo)
-	}
+	// if cfg.ENV == config.EnvDevelopment {
+	// 	seeder.Seed(userRepo, postRepo)
+	// }
 
 	return r
 }
@@ -85,10 +83,10 @@ func main() {
 	logger := zerolog.New(os.Stdout).Level(config.GetLoggerLevel(cfg.LOG_LEVEL))
 
 	db := database.GetDBConn(cfg.DSN, cfg.MAX_IDLE_CONNS, cfg.MAX_OPEN_CONNS, cfg.CONN_MAX_LIFETIME, cfg.LOG_LEVEL)
-	err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
-	if err != nil {
-		panic(err)
-	}
+	// err := db.AutoMigrate(&models.User{}, &models.Address{}, &models.Post{})
+	// if err != nil {
+	// 	panic(err)
+	// }
 	r := addRoutes(db, cfg, logger)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

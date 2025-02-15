@@ -2,6 +2,7 @@ package validator
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 var v = validator.New(validator.WithRequiredStructEnabled())
@@ -22,4 +23,9 @@ func ValidateData(data any) map[string]any {
 	}
 
 	return nil
+}
+
+func IsValidUUID(id string) bool {
+	_, err := uuid.Parse(id)
+	return err == nil
 }

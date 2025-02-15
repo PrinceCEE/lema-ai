@@ -12,7 +12,7 @@ import (
 )
 
 type UserRepository interface {
-	GetUser(ctx context.Context, userId uint) (*models.User, error)
+	GetUser(ctx context.Context, userId string) (*models.User, error)
 	GetUsers(ctx context.Context, opts pagination.PaginationQuery) (*pagination.GetUsersResult, error)
 	GetUserCount(ctx context.Context) (int64, error)
 }
@@ -25,7 +25,7 @@ func NewUserService(userRepo UserRepository) *UserService {
 	return &UserService{userRepo}
 }
 
-func (s *UserService) GetUser(userId uint) (*models.User, error) {
+func (s *UserService) GetUser(userId string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
