@@ -62,7 +62,7 @@ export const UserTable = () => {
                     router.push(`/posts?userId=${user.id}`);
                   }}
                 >
-                  <td className="pl-4 py-6 h-11 whitespace-nowrap">{`${user.first_name} ${user.last_name}`}</td>
+                  <td className="pl-4 py-6 h-11 whitespace-nowrap font-medium">{`${user.first_name} ${user.last_name}`}</td>
                   <td className="pl-4 py-6 h-11">{user.email}</td>
                   <td className="pl-4 md:max-w-[392px] py-6 h-11 truncate">{`${user.address.street}, ${user.address.state}, ${user.address.city}, ${user.address.zipcode}`}</td>
                 </tr>
