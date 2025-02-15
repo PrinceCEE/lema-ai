@@ -2,25 +2,41 @@
 
 import { useQuery } from "@tanstack/react-query";
 import ReactPaginate from "react-paginate";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { NextLabel, PreviousLabel, Loader } from "@/components";
 import { userService } from "@/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppStoreDispatch } from "@/hooks";
 
 export const UserTable = () => {
-  const dispatch = useAppStoreDispatch();
   const router = useRouter();
-  const [page, setPage] = useState(0);
-  const limit = 6;
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [page, setPage] = useState(
+    searchParams.get("page") ? parseInt(searchParams.get("page") as string) : 1
+  );
+  const dispatch = useAppStoreDispatch();
+  const limit = 4;
+
+  useEffect(() => {
+    if (!searchParams.has("page")) {
+      router.replace(`${pathname}?page=1`);
+      setPage(1);
+    } else {
+      const newPage = parseInt(searchParams.get("page") as string);
+      setPage(newPage);
+    }
+  }, [searchParams, pathname, router]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["users", page],
-    queryFn: () => userService.getUsers(limit, page + 1),
+    queryFn: () => userService.getUsers(limit, page),
   });
 
   const handlePageClick = (event: { selected: number }) => {
-    setPage(event.selected);
+    const newPage = event.selected + 1;
+    setPage(newPage);
+    router.push(`${pathname}?page=${newPage}`);
   };
 
   if (error) {
@@ -38,7 +54,7 @@ export const UserTable = () => {
       <div className="border rounded-lg shadow-md text-lightblack min-h-[332px] overflow-x-scroll">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="text-xs font-medium h-11 text-center">
+            <tr className="text-xs font-medium h-[72px] text-center">
               <th className="pl-4 py-6 text-left">Full Name</th>
               <th className="pl-4 py-6 text-left">Email Address</th>
               <th className="pl-4 py-6 text-left">Address</th>
@@ -57,16 +73,16 @@ export const UserTable = () => {
               data?.users?.map((user) => (
                 <tr
                   key={user.id}
-                  className="border-b text-left cursor-pointer"
+                  className="border-b text-left cursor-pointer h-[72px]"
                   onClick={() => {
                     router.push(`/posts?userId=${user.id}`);
                   }}
                 >
-                  <td className="pl-4 py-6 h-11 whitespace-nowrap font-medium">
+                  <td className="pl-4 py-6 h-full whitespace-nowrap font-medium">
                     {user.name}
                   </td>
-                  <td className="pl-4 py-6 h-11">{user.email}</td>
-                  <td className="pl-4 md:max-w-[392px] py-6 h-11 truncate">{`${user.address.street}, ${user.address.state}, ${user.address.city}, ${user.address.zipcode}`}</td>
+                  <td className="pl-4 py-6 h-full">{user.email}</td>
+                  <td className="pl-4 md:max-w-[392px] py-6 h-full truncate">{`${user.address.street}, ${user.address.state}, ${user.address.city}, ${user.address.zipcode}`}</td>
                 </tr>
               ))
             )}
@@ -85,7 +101,7 @@ export const UserTable = () => {
           renderOnZeroPageCount={null}
           pageClassName="md:w-[40px] w-[27px] md:h-[40px] h-[27px] flex items-center justify-center text-sm font-medium text-lightblack hover:text-paginationBtnHoverText hover:bg-paginationBtnBg active:text-paginationBtnHoverText active:bg-paginationBtnBg cursor-pointer"
           activeClassName="bg-paginationBtnBg text-paginationBtnHoverText"
-          forcePage={page}
+          forcePage={page - 1}
         />
       </div>
     </div>

@@ -87,7 +87,7 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
       className="flex flex-col z-50 p-6 gap-6 md:w-[632px] sm:w-full mobilesm:w-full bg-white border rounded-lg shadow-sm"
       onClick={(e) => e.stopPropagation()}
       onSubmit={handleSubmit(async (data) => {
-        mutate({ ...data, userId: Number(userId!) });
+        mutate({ ...data, userId: userId! });
       })}
     >
       <h1 className="text-x font-medium text-black">New Post</h1>

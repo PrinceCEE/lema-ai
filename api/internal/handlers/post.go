@@ -32,9 +32,9 @@ func NewPostHandler(postService PostService, cfg *config.Config, l zerolog.Logge
 }
 
 type createPostData struct {
-	Title  string `json:"title" validate:"required,min=5"`
+	Title  string `json:"title" validate:"required"`
 	Body   string `json:"body" validate:"required"`
-	UserID string `json:"userId" validate:"required,uuid"`
+	UserID string `json:"userId" validate:"required"`
 }
 
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {

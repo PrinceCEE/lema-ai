@@ -34,7 +34,7 @@ const Users = () => {
         <BackButton
           text="Back to Users"
           handleClick={() => {
-            router.push("/");
+            router.back();
           }}
         />
         <h1 className="text-x font-medium text-[#181D27]">{user?.name}</h1>
