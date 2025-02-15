@@ -38,7 +38,7 @@ const Users = () => {
           }}
         />
         <h1 className="text-x font-medium text-[#181D27]">{`${user?.first_name} ${user?.last_name}`}</h1>
-        <div className="flex gap-2 items-center text-sm font-normal">
+        <div className="flex gap-2 items-center flex-wrap text-sm font-normal">
           <span>{user?.email}</span>
           <span>•</span>
           <span className="font-semibold">{`${posts?.length} Posts`}</span>
