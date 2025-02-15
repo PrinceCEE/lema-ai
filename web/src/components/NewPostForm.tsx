@@ -1,6 +1,5 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { LuLoaderCircle } from "react-icons/lu";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { object, string } from "yup";
 import { Input, TextArea } from "./Input";
@@ -11,6 +10,7 @@ import { postService } from "@/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useAppStoreDispatch } from "@/hooks";
+import { Loader } from "./Loaders";
 
 const createPostSchema = object({
   title: string()
@@ -109,14 +109,12 @@ export const NewPostForm: FC<{ onClose: () => void }> = ({ onClose }) => {
           Cancel
         </Button>
         <Button
-          className="flex justify-center gap-x-1 items-center px-4 py-[11.5px] border rounded-[4px] bg-[#334155] font-semibold text-sm text-white"
+          className="flex justify-center gap-x-2 items-center px-4 py-[11.5px] border rounded-[4px] bg-[#334155] font-semibold text-sm text-white"
           isSubmit
           isDisabled={isPending}
         >
-          {isPending && (
-            <LuLoaderCircle className="inline-block animate-spin" />
-          )}
           <span className="inline-block">Publish</span>
+          {isPending && <Loader bg="bg-white" />}
         </Button>
       </div>
     </form>
