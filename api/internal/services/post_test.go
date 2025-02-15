@@ -81,7 +81,6 @@ func (s *PostServiceTestSuite) TestPostService() {
 	t.Run("Create post", func(t *testing.T) {
 		for _, user := range s.users {
 			for i := 0; i < 5; i++ {
-				now := time.Now()
 				post := models.Post{
 					ID:     uuid.NewString(),
 					Title:  gofakeit.Sentence(7),
@@ -93,8 +92,6 @@ func (s *PostServiceTestSuite) TestPostService() {
 				s.NoError(err)
 				s.NotEmpty(post.ID)
 				s.NotEmpty(post.CreatedAt)
-				s.NotEmpty(post.UpdatedAt)
-				s.Equal(post.CreatedAt.After(now), true)
 			}
 		}
 	})

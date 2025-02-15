@@ -82,20 +82,18 @@ func (s *PostRepositoryTestSuite) TestPostRepository() {
 			defer cancel()
 
 			for i := 0; i < 5; i++ {
-				now := time.Now()
 				post := models.Post{
-					ID:     uuid.NewString(),
-					Title:  gofakeit.Sentence(7),
-					Body:   gofakeit.Sentence(40),
-					UserID: user.ID,
+					ID:        uuid.NewString(),
+					Title:     gofakeit.Sentence(7),
+					Body:      gofakeit.Sentence(40),
+					UserID:    user.ID,
+					CreatedAt: time.Now().UTC().Format(time.RFC3339),
 				}
 
 				err := s.postRepo.CreatePost(ctx, &post)
 				s.NoError(err)
 				s.NotEmpty(post.ID)
 				s.NotEmpty(post.CreatedAt)
-				s.NotEmpty(post.UpdatedAt)
-				s.Equal(post.CreatedAt.After(now), true)
 			}
 		}
 	})

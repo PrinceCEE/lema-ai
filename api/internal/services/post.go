@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/princecee/lema-ai/internal/db/models"
@@ -29,6 +30,7 @@ func (s *PostService) CreatePost(p *models.Post) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	p.CreatedAt = time.Now().UTC().Format(time.RFC3339)
 	err := s.postRepo.CreatePost(ctx, p)
 	if err != nil {
 		switch {
@@ -65,6 +67,7 @@ func (s *PostService) GetPosts(userId string) ([]*models.Post, error) {
 
 	posts, err := s.postRepo.GetPosts(ctx, userId)
 	if err != nil {
+		fmt.Println(err)
 		switch {
 		case errors.Is(err, gorm.ErrRecordNotFound):
 			return []*models.Post{}, nil

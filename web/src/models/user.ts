@@ -1,19 +1,18 @@
 interface Address {
-  id: number;
+  id: string;
   street: string;
   city: string;
   state: string;
   zipcode: string;
-  user_id: number;
+  user_id: string;
   created_at: string;
   updated_at: string;
 }
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
-  first_name: string;
-  last_name: string;
+  name: string;
   username: string;
   phone: string;
   address: Address;

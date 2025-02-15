@@ -12,12 +12,12 @@ const Users = () => {
 
   const { data: posts, isLoading: postsLoading } = useQuery({
     queryKey: ["posts", userId],
-    queryFn: () => postService.getPosts(Number(userId!)),
+    queryFn: () => postService.getPosts(userId!),
   });
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ["user", userId],
-    queryFn: () => userService.getUser(Number(userId!)),
+    queryFn: () => userService.getUser(userId!),
   });
 
   if (postsLoading || userLoading) {
@@ -37,7 +37,7 @@ const Users = () => {
             router.push("/");
           }}
         />
-        <h1 className="text-x font-medium text-[#181D27]">{`${user?.first_name} ${user?.last_name}`}</h1>
+        <h1 className="text-x font-medium text-[#181D27]">{user?.name}</h1>
         <div className="flex gap-2 items-center flex-wrap text-sm font-normal">
           <span>{user?.email}</span>
           <span>•</span>

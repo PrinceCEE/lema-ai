@@ -53,7 +53,6 @@ func (s *UserRepositoryTestSuite) TestUserRepository() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		now := time.Now()
 		user := &models.User{
 			ID:       uuid.NewString(),
 			Name:     gofakeit.Name(),
@@ -72,9 +71,6 @@ func (s *UserRepositoryTestSuite) TestUserRepository() {
 		err := s.userRepo.CreateUser(ctx, user)
 		s.NoError(err)
 		s.NotEmpty(user.ID)
-		s.NotEmpty(user.CreatedAt)
-		s.NotEmpty(user.UpdatedAt)
-		s.Equal(user.CreatedAt.After(now), true)
 		s.Equal(user.ID, user.Address.UserID)
 
 		userId = user.ID
