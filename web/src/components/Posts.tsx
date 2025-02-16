@@ -89,7 +89,7 @@ export const DisplayPost: FC<{ post: Post }> = ({ post }) => {
 
   return (
     <div className="w-full h-full flex flex-col gap-4 text-lightblack relative">
-      <h1 className="text-[18px] leading-5 font-medium py-1 line-clamp-2 break-all max-w-[201px]">
+      <h1 className="text-[18px] leading-5 font-medium line-clamp-2 break-all pr-[21px]">
         {post.title}
       </h1>
       <p className="text-sm font-normal break-all line-clamp-[8]">
