@@ -1,12 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import ReactPaginate from "react-paginate";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { NextLabel, PreviousLabel, Loader } from "@/components";
+import { Loader } from "@/components";
 import { userService } from "@/api";
 import { useEffect, useState } from "react";
 import { useAppStoreDispatch } from "@/hooks";
+import { Paginator } from "./Pagination";
 
 export const UserTable = () => {
   const router = useRouter();
@@ -33,10 +33,9 @@ export const UserTable = () => {
     queryFn: () => userService.getUsers(limit, page),
   });
 
-  const handlePageClick = (event: { selected: number }) => {
-    const newPage = event.selected + 1;
-    setPage(newPage);
-    router.push(`${pathname}?page=${newPage}`);
+  const handlePageClick = (page: number) => {
+    setPage(page);
+    router.push(`${pathname}?page=${page}`);
   };
 
   if (error) {
@@ -89,21 +88,17 @@ export const UserTable = () => {
           </tbody>
         </table>
       </div>
-      <div className="flex flex-row self-end">
-        <ReactPaginate
-          breakLabel="..."
-          nextLabel={<NextLabel />}
-          previousLabel={<PreviousLabel />}
-          className="flex items-center justify-center md:gap-x-2 gap-x-1"
-          onPageChange={handlePageClick}
-          pageRangeDisplayed={2}
-          pageCount={data?.total_pages || 0}
-          renderOnZeroPageCount={null}
-          pageClassName="md:w-[40px] rounded-lg w-[27px] md:h-[40px] h-[27px] flex items-center justify-center text-sm font-medium text-lightblack hover:text-paginationBtnHoverText hover:bg-paginationBtnBg active:text-paginationBtnHoverText active:bg-paginationBtnBg cursor-pointer"
-          activeClassName="bg-paginationBtnBg text-paginationBtnHoverText"
-          forcePage={page - 1}
+      {data && (
+        <Paginator
+          currentIndex={page}
+          lastIndex={data!.total_pages}
+          isLeftButtonEnabled={data!.has_prev}
+          isRightButtonEnabled={data!.has_next}
+          onLeftButtonClick={() => handlePageClick(page - 1)}
+          onRightButtonClick={() => handlePageClick(page + 1)}
+          onPaginatorItemClick={handlePageClick}
         />
-      </div>
+      )}
     </div>
   );
 };

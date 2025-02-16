@@ -1,13 +1,14 @@
 import clsx from "clsx";
 import { FC, ReactNode } from "react";
 import { ArrowLeft, ArrowRight } from "./Arrows";
+import { VoidCallback } from "@/types";
 
 export const Button: FC<{
   children: ReactNode;
   className: string;
   isSubmit?: boolean;
   isDisabled?: boolean;
-  onClick?: () => void;
+  onClick?: VoidCallback;
 }> = ({ children, onClick, className, isSubmit, isDisabled }) => {
   return (
     <button
@@ -21,7 +22,7 @@ export const Button: FC<{
   );
 };
 
-export const BackButton: FC<{ text: string; handleClick: () => void }> = ({
+export const BackButton: FC<{ text: string; handleClick: VoidCallback }> = ({
   text,
   handleClick,
 }) => {
@@ -36,9 +37,20 @@ export const BackButton: FC<{ text: string; handleClick: () => void }> = ({
   );
 };
 
-export const PreviousLabel = () => {
+export const PreviousLabel: FC<{
+  isDisable: boolean;
+  onClick: VoidCallback;
+}> = ({ isDisable, onClick }) => {
   return (
-    <Button className="w-max flex items-center justify-center gap-x-2 md:mr-[42px]">
+    <Button
+      onClick={onClick}
+      className={clsx(
+        `w-max flex items-center justify-center gap-x-2 ${
+          isDisable ? "cursor-not-allowed" : "cursor-pointer"
+        }`
+      )}
+      isDisabled={isDisable}
+    >
       <ArrowLeft />
       <span className="text-sm font-semibold text-lightblack hidden md:inline">
         Previous
@@ -47,9 +59,19 @@ export const PreviousLabel = () => {
   );
 };
 
-export const NextLabel = () => {
+export const NextLabel: FC<{ isDisble: boolean; onClick: VoidCallback }> = ({
+  isDisble,
+  onClick,
+}) => {
   return (
-    <Button className="w-max flex items-center justify-center gap-x-2 md:ml-[42px]">
+    <Button
+      onClick={onClick}
+      className={clsx(
+        `w-max flex items-center justify-center gap-x-2 ${
+          isDisble ? "cursor-not-allowed" : "cursor-pointer"
+        }`
+      )}
+    >
       <span className="text-sm font-semibold text-lightblack hidden md:inline">
         Next
       </span>
