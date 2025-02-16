@@ -9,6 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { AxiosError } from "axios";
 import { useAppStoreDispatch } from "@/hooks";
+import { postTextFormatter } from "@/utils";
 
 export const PostContainer: FC<{ post?: Post }> = ({ post }) => {
   return (
@@ -89,14 +90,14 @@ export const DisplayPost: FC<{ post: Post }> = ({ post }) => {
 
   return (
     <div className="w-full h-full flex flex-col gap-4 text-lightblack relative">
-      <h1 className="text-[18px] leading-5 font-medium py-1 text-left">
-        {post.title.length > 50 ? post.title.slice(0, 50) + "..." : post.title}
+      <h1 className="text-[18px] leading-5 font-medium py-1 text-left break-words max-w-[201px]">
+        {postTextFormatter(post.title, true)}
       </h1>
-      <p className="text-sm font-normal overflow-hidden flex-auto text-justify overflow-ellipsis">
-        {post.body}
+      <p className="text-sm font-normal overflow-hidden w-full flex-auto text-wrap break-words text-left overflow-ellipsis">
+        {postTextFormatter(post.body, false)}
       </p>
       <RiDeleteBinLine
-        className="absolute top-[-15px] right-[-15px] text-red-400 cursor-pointer"
+        className="absolute h-3 w-3 top-[-10px] right-[-10px] text-red-400 cursor-pointer"
         onClick={handleClick}
       />
     </div>

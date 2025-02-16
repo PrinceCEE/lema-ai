@@ -27,7 +27,7 @@ export const BackButton: FC<{ text: string; handleClick: () => void }> = ({
 }) => {
   return (
     <div
-      className="w-max flex items-center justify-center gap-x-2 cursor-pointer"
+      className="w-max flex items-center justify-center gap-x-[12.17px] cursor-pointer"
       onClick={() => handleClick()}
     >
       <FaArrowLeft className="h-[11.67px] w-[11.67px] text-tableArrow" />
@@ -38,7 +38,7 @@ export const BackButton: FC<{ text: string; handleClick: () => void }> = ({
 
 export const PreviousLabel = () => {
   return (
-    <Button className="w-max flex items-center justify-center gap-x-2">
+    <Button className="w-max flex items-center justify-center gap-x-[12.17px] md:mr-[42px]">
       <FaArrowLeft className="h-[11.67px] w-[11.67px] text-tableArrow" />
       <span className="text-sm font-semibold text-lightblack hidden md:inline">
         Previous
@@ -49,7 +49,7 @@ export const PreviousLabel = () => {
 
 export const NextLabel = () => {
   return (
-    <Button className="w-max flex items-center justify-center gap-x-2">
+    <Button className="w-max flex items-center justify-center gap-x-[12.17px] md:ml-[42px]">
       <span className="text-sm font-semibold text-lightblack hidden md:inline">
         Next
       </span>

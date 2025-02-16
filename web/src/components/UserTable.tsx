@@ -99,7 +99,7 @@ export const UserTable = () => {
           pageRangeDisplayed={2}
           pageCount={data?.total_pages || 0}
           renderOnZeroPageCount={null}
-          pageClassName="md:w-[40px] w-[27px] md:h-[40px] h-[27px] flex items-center justify-center text-sm font-medium text-lightblack hover:text-paginationBtnHoverText hover:bg-paginationBtnBg active:text-paginationBtnHoverText active:bg-paginationBtnBg cursor-pointer"
+          pageClassName="md:w-[40px] rounded-lg w-[27px] md:h-[40px] h-[27px] flex items-center justify-center text-sm font-medium text-lightblack hover:text-paginationBtnHoverText hover:bg-paginationBtnBg active:text-paginationBtnHoverText active:bg-paginationBtnBg cursor-pointer"
           activeClassName="bg-paginationBtnBg text-paginationBtnHoverText"
           forcePage={page - 1}
         />
